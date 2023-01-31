@@ -4,7 +4,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=4
-#SBATCH --time=0-01:00:00
+#SBATCH --time=0-02:00:00
 #SBATCH --mem=36G
 #SBATCH --account=sscm012844
 
@@ -26,29 +26,64 @@ module add languages/r/4.1.0
 while getopts s:i:o:d:c: flag
 do
   case "$flag" in 
+    s) script=${OPTARG};;
     i) iterations=${OPTARG};;
     o) out_directory=${OPTARG};;
     d) data_directory=${OPTARG};;
     c) cores=${OPTARG};;
-
   esac
 done
 
-if [ -z "$iterations" ]
+
+
+if [ -z "$out_directory" ]
 then
-  $iterations=4000
+  out_directory="/user/work/lg14410/farm-size-modelling/"
+else
+  out_directory="/user/work/lg14410/farm-size-modelling/${out_directory}"
 fi
 
-if [ -z "$my_var" ]
+if [ -z "$data_directory" ]
 then
-  out_directory="random directory"
+  data_directory="data/"
+else
+  data_directory="data/${data_directory}"
+fi
+
+if [ -z "$iterations" ]
+then
+  iterations=4000
+else
+  iterations=$iterations
+fi
+
+if [ -z "$cores" ]
+then
+  cores=4
+else
+  cores=$cores
+fi
+
+if [ -z "$script" ]
+then
+  echo "Need to specify a script!" 1>&2
+  exit 0
+else
+  script=$script
 fi
 
 echo "iterations: $iterations"
 echo "out_directory: $out_directory"
+echo "data_directory: $data_directory"
+echo "cores: $cores"
+echo "script: $script"
 
 
 
+Rscript $script -i $iterations -d $data_directory -o $out_directory -c $cores
 
-Rscript "src/modelling/brms_quant_reg.R" -i $iterations -d "brms-27-01-2023" -b "/user/work/lg14410/farm-size-modelling/" -c 4
-
+unset iterations
+unset out_directory
+unset data_directory
+unset cores
+unset script

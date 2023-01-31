@@ -1,4 +1,8 @@
 
+# Example of how to run:
+
+
+
 library(brms)
 library(ggplot2)
 library(tidyr)
@@ -6,6 +10,7 @@ library(tibble)
 library(optparse)
 library(readr)
 library(magrittr)
+
 
 # option_list = list(
 #   make_option(c("-i", "--iter"),  type='integer',
