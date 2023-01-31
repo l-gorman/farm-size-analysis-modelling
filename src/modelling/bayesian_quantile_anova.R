@@ -1,4 +1,4 @@
-# sbatch src/bc-run-scripts/run_brms_models.sh -i 10000 -n 4 -o brms_anova_quantile_31_01_2023 
+# sbatch src/bc-run-scripts/run_brms_models.sh -s src/modelling/bayesian_quantile_anova.R -i 10000 -n 4 -o brms_anova_quantile_31_01_2023 
 
 
 library(brms)
@@ -8,6 +8,7 @@ library(dplyr)
 library(tidyr)
 library(ggdist)
 library(magrittr)
+library(optparse)
 
 option_list = list(
   make_option(c("-i", "--iter"),  type='integer',
@@ -34,6 +35,8 @@ dir.create(opt$output)
 
 opt$data <- gsub("/$", "", opt$data)
 opt$output <- gsub("/$", "", opt$output)
+
+writeLines("test_file_output",paste0(opt$output,"/test_file.txt"))
 
 
 
