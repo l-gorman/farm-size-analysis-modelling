@@ -1,0 +1,7 @@
+data/
+prepared-data
+*.Rproj
+outputs/
+pyenv/
+*.DS_Store
+.Rproj.user/
