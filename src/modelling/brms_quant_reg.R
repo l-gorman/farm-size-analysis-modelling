@@ -5,7 +5,7 @@ library(tidyr)
 library(tibble)
 library(optparse)
 library(readr)
-
+library(magrittr)
 
 # option_list = list(
 #   make_option(c("-i", "--iter"),  type='integer',
@@ -76,7 +76,8 @@ indicator_data$geo_id <- paste0(indicator_data$ADM0_CODE, "_",
                                 indicator_data$ADM2_CODE)
 
 
-
+aez_cols <- grep("AEZ_", colnames(indicator_data), value=T)
+aez_cols <-aez_cols[aez_cols!="AEZ_Classes_33"]
 x <- c("healthcare_traveltime",
        "nightlights",
        "population_density",
@@ -91,7 +92,8 @@ x <- c("healthcare_traveltime",
        
        
        
-       new_land_cat_columns
+       new_land_cat_columns,
+       aez_cols
 )
 
 
@@ -104,11 +106,9 @@ formula_quant_reg <- as.formula(
 
 brm_quant_reg <- brms::brm(
   formula=bf(formula_quant_reg, quantile = 0.1),
-  prior = c(prior(normal(5, 5), class = "Intercept"), 
+  prior = c(
             # Prior guess of 20% of the terms are non-zero
-            # prior(horseshoe(par_ratio = 2 / 8), class = "b"),
-            prior(horseshoe(), class = "b"),
-            prior(student_t(4, 0, 1), class = "sigma")), 
+            prior(horseshoe(par_ratio = 1 / 8), class = "b")), 
   data = indicator_data,
   family = asym_laplace(),
   cores = 4

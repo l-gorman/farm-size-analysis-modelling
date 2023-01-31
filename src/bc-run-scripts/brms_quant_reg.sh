@@ -1,14 +1,12 @@
 #!/bin/bash
 
-#SBATCH --mail-user=[lg14410@bristol.ac.uk]
-#SBATCH --mail-type=END,FAIL,TIME_LIMIT_80
-#SBATCH --job-name=distributional-analysis
+#SBATCH --job-name=farm-size-modelling
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=4
 #SBATCH --time=0-01:00:00
 #SBATCH --mem=36G
-
+#SBATCH --account=sscm012844
 
 cd "${SLURM_SUBMIT_DIR}"
 
@@ -25,10 +23,32 @@ echo "More details on submitting jobs here https://www.acrc.bris.ac.uk/protected
 
 module add languages/r/4.1.0
 
-# d=$(date +%Y-%m-%d)
+while getopts s:i:o:d:c: flag
+do
+  case "$flag" in 
+    i) iterations=${OPTARG};;
+    o) out_directory=${OPTARG};;
+    d) data_directory=${OPTARG};;
+    c) cores=${OPTARG};;
 
-# export OMP_NUM_THREADS=10
+  esac
+done
+
+if [ -z "$iterations" ]
+then
+  $iterations=4000
+fi
+
+if [ -z "$my_var" ]
+then
+  out_directory="random directory"
+fi
+
+echo "iterations: $iterations"
+echo "out_directory: $out_directory"
 
 
-Rscript "src/modelling/brms_quant_reg.R" -i 2000 -d "brms-27-01-2023" -b "/user/work/lg14410/farm-size-modelling/" -c 4
+
+
+Rscript "src/modelling/brms_quant_reg.R" -i $iterations -d "brms-27-01-2023" -b "/user/work/lg14410/farm-size-modelling/" -c 4
 
