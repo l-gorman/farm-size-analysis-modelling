@@ -4,7 +4,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=4
-#SBATCH --time=0-02:00:00
+#SBATCH --time=2-00:00:00
 #SBATCH --mem=36G
 #SBATCH --account=sscm012844
 
@@ -23,11 +23,12 @@ echo "More details on submitting jobs here https://www.acrc.bris.ac.uk/protected
 
 module add languages/r/4.1.0
 
-while getopts s:i:o:d:c: flag
+while getopts s:i:w:o:d:c: flag
 do
   case "$flag" in 
     s) script=${OPTARG};;
     i) iterations=${OPTARG};;
+    w) warmup=${OPTARG};;
     o) out_directory=${OPTARG};;
     d) data_directory=${OPTARG};;
     c) cores=${OPTARG};;
@@ -52,7 +53,14 @@ fi
 
 if [ -z "$iterations" ]
 then
-  iterations=4000
+  iterations=2000
+else
+  iterations=$iterations
+fi
+
+if [ -z "$iterations" ]
+then
+  iterations=2000
 else
   iterations=$iterations
 fi
@@ -73,6 +81,8 @@ else
 fi
 
 echo "iterations: $iterations"
+echo "warmup: $warmup"
+
 echo "out_directory: $out_directory"
 echo "data_directory: $data_directory"
 echo "cores: $cores"
@@ -80,10 +90,11 @@ echo "script: $script"
 
 
 
-Rscript $script -i $iterations -d $data_directory -o $out_directory -c $cores
+Rscript $script -i $iterations -w $warmup -d $data_directory -o $out_directory -c $cores
 
 unset iterations
 unset out_directory
 unset data_directory
 unset cores
 unset script
+unset
