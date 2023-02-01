@@ -13,6 +13,8 @@ library(optparse)
 option_list = list(
   make_option(c("-i", "--iter"),  type='integer',
               help="Iterations"),
+  make_option(c("-w", "--warmup"),  type='integer',
+              help="Warmup"),
   make_option(c("-d", "--data"), type='character',
               help="Directory where data will be loaded from"),
   make_option(c("-o", "--output"), type='character',
@@ -111,6 +113,8 @@ adm_0_adm_2_village_anova_q_0.1 <- brms::brm(
   family = asym_laplace(),
   
   iter = opt$iter,
+  warmup = opt$warmup,
+    
   cores = opt$ncores 
 )
 save(adm_0_adm_2_village_anova_q_0.1,file=paste0(opt$output, "/adm_0_adm_2_village_anova_q_0.1.rda"))
@@ -125,6 +129,8 @@ adm_0_adm_2_village_anova_q_0.25 <- brms::brm(
   family = asym_laplace(),
   
   iter = opt$iter,
+  warmup = opt$warmup,
+  
   cores = opt$ncores 
 )
 save(adm_0_adm_2_village_anova_q_0.25,file=paste0(opt$output, "/adm_0_adm_2_village_anova_q_0.25.rda"))
@@ -138,6 +144,8 @@ adm_0_adm_2_village_anova_q_0.75 <- brms::brm(
   family = asym_laplace(),
   
   iter = opt$iter,
+  warmup = opt$warmup,
+  
   cores = opt$ncores 
 )
 save(adm_0_adm_2_village_anova_q_0.75,file=paste0(opt$output, "/adm_0_adm_2_village_anova_q_0.75.rda"))
@@ -152,6 +160,8 @@ adm_0_adm_2_village_anova_q_0.9 <- brms::brm(
   family = asym_laplace(),
   
   iter = opt$iter,
+  warmup = opt$warmup,
+  
   cores = opt$ncores 
 )
 
