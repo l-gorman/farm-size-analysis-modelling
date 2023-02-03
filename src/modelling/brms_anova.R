@@ -1,4 +1,4 @@
-# sbatch src/bc-run-scripts/run_brms_models.sh -s src/modelling/bayesian_anova.R -i 4000 -w 2000 -n 4 -o brms_anova_quantile_31_01_2023 
+# sbatch src/bc-run-scripts/run_brms_anova_location.sh  -i 1000 -w 1000 -n 4 -o brms_anova_03_02_2023 
 library(brms)
 library(ggplot2)
 library(ggridges)
