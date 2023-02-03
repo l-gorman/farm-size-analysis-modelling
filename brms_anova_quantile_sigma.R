@@ -165,14 +165,15 @@ level_combos <- list(
 ###########################################################################################
 ###########################################################################################
 
-dir.create(paste0(opt$output,"/gaussian_location/"))
+dir.create(paste0(opt$output,"/quantile_location_scale/"))
 
 for (level_combo in level_combos){
   
   
-  result <- run_model(data,level_combo, sigma=F, iter=opt$iter, warmup=opt$warmup,ncores=opt$ncores)
-  save(result,file=paste0(opt$output,"/gaussian_location/",paste0(level_combo, collapse="_"),".rda"))
-  
+  for (quantile in seq(0.1,0.9,0.1)){
+    result <- run_model(data,level_combo, quantile=quantile, sigma=T, iter=opt$iter, warmup=opt$warmup,ncores=opt$ncores)
+    save(result,file=paste0(opt$output,"/quantile_location_scale/",paste0(paste0(level_combo, collapse="_"),"_",quantile),".rda"))
+  }
   
   
 }
@@ -182,7 +183,7 @@ for (level_combo in level_combos){
 #   load(fileName)
 #   get(ls()[ls() != "fileName"])
 # }
-# d <- loadRData("outputs/brm_anov_31_01_2023/gaussian_location/ADM0_NAME.rda")
+# d <- loadRData("outputs/brm_anov_31_01_2023/quantile_location_scale/ADM0_NAME_0.2.rda")
 # 
 
 

@@ -1,6 +1,4 @@
-# sbatch src/bc-run-scripts/run_brms_models.sh -s src/modelling/bayesian_quantile_anova.R -i 4000 -w 2000 -n 4 -o brms_anova_quantile_31_01_2023 
-
-
+# sbatch src/bc-run-scripts/run_brms_models.sh -s src/modelling/bayesian_anova.R -i 4000 -w 2000 -n 4 -o brms_anova_quantile_31_01_2023 
 library(brms)
 library(ggplot2)
 library(ggridges)
@@ -21,15 +19,16 @@ option_list = list(
               help="The directory where results will be written"),
   make_option(c("-c", "--ncores"), type='character',
               help="The number of chains/cores")
-
+  
 )
 
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
- 
+
 # opt <- list(
 #   iter=2,
+#   warmup=1,
 #   data="./data/",
 #   output="./outputs/brm_anov_31_01_2023/",
 #   ncores=4
@@ -42,6 +41,66 @@ opt$data <- gsub("/$", "", opt$data)
 opt$output <- gsub("/$", "", opt$output)
 
 writeLines("test_file_output",paste0(opt$output,"/test_file.txt"))
+
+
+# function for running brms hierarchical model ----------------------------
+
+run_model <- function(data,levels, quantile=NULL, sigma, iter, warmup,ncores ){
+  
+  
+  
+  levels_args <- paste0(levels,collapse="/")
+  temp_formula <- paste0("log(land_cultivated_ha) ~ 1 + (1|",levels_args,")")
+  
+  
+  if (sigma==F & is.null(quantile)){
+    final_formula <- bf(temp_formula)
+    family <- gaussian()
+  }
+  
+  if (sigma==T & is.null(quantile)){
+    sigma_formula <- paste0("sigma ~ 1 + (1|",levels_args,")")
+    
+    final_formula <- bf(temp_formula, sigma_formula)
+    family <- gaussian()
+    
+    
+  }
+  
+  if (!is.null(quantile)){
+    if (quantile>0 & quantile < 1 & sigma==F){
+      
+      final_formula <- bf(temp_formula, quantile=quantile)
+      family <- asym_laplace()
+      
+    }
+  }
+  
+  
+  
+  if (!is.null(quantile)){
+    if (quantile>0 & quantile < 1 & sigma==T){
+      sigma_formula <- paste0("sigma ~ 1 + (1|",levels_args,")")
+      
+      final_formula <- bf(temp_formula, sigma_formula,quantile=quantile)
+      family <- asym_laplace()
+      
+    }
+  }
+  
+  
+  result <- brms::brm(
+    formula=final_formula,
+    data = indicator_data,
+    family=family,
+    cores = ncores,
+    warmup = warmup,
+    iter=iter
+  )
+  
+  return(result)
+}
+
 
 
 
@@ -62,8 +121,6 @@ indicator_data[land_cat_columns] <- lapply(indicator_data[land_cat_columns] , fu
   column <- column/indicator_data$pixelCount
   return(column)
 }) %>% dplyr::bind_cols()
-
-
 
 
 new_land_cat_columns <- land_categories$Tag
@@ -89,84 +146,44 @@ indicator_data$geo_id <- paste0(indicator_data$ADM0_CODE, "_",
 
 
 
-
-# Quant 0.5 ---------------------------------------------------------------
-adm_0_adm_2_village_anova_q_0.5 <- brms::brm(
-  formula=bf(log(land_cultivated_ha)~(1|ADM0_NAME/ADM2_CODE/village),
-             quantile=0.5),
+level_combos <- list(
+  c("ADM0_NAME"),
+  c("ADM0_NAME","ADM1_CODE"),
+  c("ADM0_NAME","ADM1_CODE","ADM2_CODE"),
+  c("ADM0_NAME","ADM1_CODE","ADM2_CODE","village"),
   
-  data = indicator_data,
-  family = asym_laplace(),
-  
-  iter = opt$iter,
-  cores = opt$ncores 
-)
-save(adm_0_adm_2_village_anova_q_0.5,file=paste0(opt$output, "/adm_0_adm_2_village_anova_q_0.5.rda"))
-
-
-# Quant 0.1 ---------------------------------------------------------------
-adm_0_adm_2_village_anova_q_0.1 <- brms::brm(
-  formula=bf(log(land_cultivated_ha)~(1|ADM0_NAME/ADM2_CODE/village),
-             quantile=0.1),
-  
-  data = indicator_data,
-  family = asym_laplace(),
-  
-  iter = opt$iter,
-  warmup = opt$warmup,
-    
-  cores = opt$ncores 
-)
-save(adm_0_adm_2_village_anova_q_0.1,file=paste0(opt$output, "/adm_0_adm_2_village_anova_q_0.1.rda"))
-
-
-# Quant 0.25 ---------------------------------------------------------------
-adm_0_adm_2_village_anova_q_0.25 <- brms::brm(
-  formula=bf(log(land_cultivated_ha)~(1|ADM0_NAME/ADM2_CODE/village),
-             quantile=0.25),
-  
-  data = indicator_data,
-  family = asym_laplace(),
-  
-  iter = opt$iter,
-  warmup = opt$warmup,
-  
-  cores = opt$ncores 
-)
-save(adm_0_adm_2_village_anova_q_0.25,file=paste0(opt$output, "/adm_0_adm_2_village_anova_q_0.25.rda"))
-
-# Quant 0.75 ---------------------------------------------------------------
-adm_0_adm_2_village_anova_q_0.75 <- brms::brm(
-  formula=bf(log(land_cultivated_ha)~(1|ADM0_NAME/ADM2_CODE/village),
-             quantile=0.75),
-  
-  data = indicator_data,
-  family = asym_laplace(),
-  
-  iter = opt$iter,
-  warmup = opt$warmup,
-  
-  cores = opt$ncores 
-)
-save(adm_0_adm_2_village_anova_q_0.75,file=paste0(opt$output, "/adm_0_adm_2_village_anova_q_0.75.rda"))
-
-
-# Quant 0.9 ---------------------------------------------------------------
-adm_0_adm_2_village_anova_q_0.9 <- brms::brm(
-  formula=bf(log(land_cultivated_ha)~(1|ADM0_NAME/ADM2_CODE/village),
-             quantile=0.9),
-  
-  data = indicator_data,
-  family = asym_laplace(),
-  
-  iter = opt$iter,
-  warmup = opt$warmup,
-  
-  cores = opt$ncores 
+  c("ADM0_NAME","ADM2_CODE","village")
 )
 
-save(adm_0_adm_2_village_anova_q_0.9,file=paste0(opt$output, "/adm_0_adm_2_village_anova_q_0.9.rda"))
 
+
+###########################################################################################
+###########################################################################################
+###########################################################################################
+# Gaussian Models Location Only
+###########################################################################################
+###########################################################################################
+###########################################################################################
+
+dir.create(paste0(opt$output,"/gaussian_location_scale/"))
+
+for (level_combo in level_combos){
+  
+  
+  result <- run_model(data,level_combo, sigma=T, iter=opt$iter, warmup=opt$warmup,ncores=opt$ncores)
+  save(result,file=paste0(opt$output,"/gaussian_location_scale/",paste0(level_combo, collapse="_"),".rda"))
+  
+  
+  
+}
+
+# loadRData <- function(fileName){
+#   #loads an RData file, and returns it
+#   load(fileName)
+#   get(ls()[ls() != "fileName"])
+# }
+# d <- loadRData("outputs/brm_anov_31_01_2023/gaussian_location/ADM0_NAME.rda")
+# 
 
 
 

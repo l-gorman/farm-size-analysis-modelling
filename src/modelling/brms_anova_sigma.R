@@ -170,7 +170,10 @@ dir.create(paste0(opt$output,"/gaussian_location/"))
 for (level_combo in level_combos){
   
   
-  result <- run_model(data,level_combo, sigma=F, iter=opt$iter, warmup=opt$warmup,ncores=opt$ncores)
+  result <- run_model(data,level_combo, quantile=0.1, sigma=F, iter=opt$iter, warmup=opt$warmup,ncores=opt$ncores)
+  
+  
+  
   save(result,file=paste0(opt$output,"/gaussian_location/",paste0(level_combo, collapse="_"),".rda"))
   
   

@@ -165,13 +165,16 @@ level_combos <- list(
 ###########################################################################################
 ###########################################################################################
 
-dir.create(paste0(opt$output,"/gaussian_location/"))
+dir.create(paste0(opt$output,"/quantile_location/"))
 
 for (level_combo in level_combos){
   
   
-  result <- run_model(data,level_combo, sigma=F, iter=opt$iter, warmup=opt$warmup,ncores=opt$ncores)
-  save(result,file=paste0(opt$output,"/gaussian_location/",paste0(level_combo, collapse="_"),".rda"))
+  for (quantile in seq(0.1,0.9,0.1)){
+    result <- run_model(data,level_combo, quantile=quantile, sigma=F, iter=opt$iter, warmup=opt$warmup,ncores=opt$ncores)
+    save(result,file=paste0(opt$output,"/quantile_location/",paste0(paste0(level_combo, collapse="_"),"_",quantile),".rda"))
+  }
+  
   
   
   
