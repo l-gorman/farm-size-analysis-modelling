@@ -1,4 +1,4 @@
-# sbatch src/bc-run-scripts/run_brms_models.sh -s src/modelling/bayesian_anova.R -i 4000 -w 2000 -n 4 -o brms_anova_quantile_31_01_2023 
+# sbatch src/bc-run-scripts/run_brms_anova_location_scale.sh  -i 2000 -w 1000 -n 4 -o brms_anova_03_02_2023 
 library(brms)
 library(ggplot2)
 library(ggridges)
@@ -165,16 +165,13 @@ level_combos <- list(
 ###########################################################################################
 ###########################################################################################
 
-dir.create(paste0(opt$output,"/gaussian_location/"))
+dir.create(paste0(opt$output,"/gaussian_location_scale/"))
 
 for (level_combo in level_combos){
   
   
-  result <- run_model(data,level_combo, quantile=0.1, sigma=F, iter=opt$iter, warmup=opt$warmup,ncores=opt$ncores)
-  
-  
-  
-  save(result,file=paste0(opt$output,"/gaussian_location/",paste0(level_combo, collapse="_"),".rda"))
+  result <- run_model(data,level_combo, sigma=T, iter=opt$iter, warmup=opt$warmup,ncores=opt$ncores)
+  save(result,file=paste0(opt$output,"/gaussian_location_scale/",paste0(level_combo, collapse="_"),".rda"))
   
   
   
