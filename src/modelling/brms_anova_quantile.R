@@ -48,7 +48,15 @@ opt = parse_args(opt_parser);
 
 
 
+# cl <- startMPIcluster(count=2)
+# registerDoMPI(cl)
+
+# cl <- makeCluster(mpi.universe.size(), type='MPI')
+# registerDoParallel(cl)
+
+
 workers <- opt$workers
+
 cl <- parallel::makeCluster(workers)
 # register the cluster for using foreach
 doParallel::registerDoParallel(cl)

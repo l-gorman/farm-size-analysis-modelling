@@ -1,4 +1,4 @@
-# sbatch src/bc-run-scripts/run_brms_anova_quantile_location.sh  -i 4000 -w 2000 -n 4 -o brms_anova_03_02_2023 
+# sbatch src/bc-run-scripts/run_brms_anova_quantile_location_scale.sh  -i 4000 -w 2000 -n 4 -o brms_anova_03_02_2023 
 library(brms)
 library(ggplot2)
 library(ggridges)
@@ -23,7 +23,7 @@ option_list = list(
   make_option(c("-c", "--ncores"), type='character',
               help="The number of chains/cores"),
   make_option(c("-p", "--workers"), type='character',
-              help="The number parallel workers for running multiple models"),
+              help="The number parallel workers for running multiple models")
   
 )
 
