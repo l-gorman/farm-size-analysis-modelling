@@ -1,12 +1,12 @@
 #!/bin/bash
 
-#SBATCH --job-name=brms_anova_mu
+#SBATCH --job-name=test_array
 #SBATCH -o ./Report/output.%a.out
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=4
-#SBATCH --time=1-00:00:00
-#SBATCH --mem=36G
+#SBATCH --cpus-per-task=1
+#SBATCH --time=0-00:01:00
+#SBATCH --mem=1M
 #SBATCH --account=sscm012844
 #SBATCH --array=1-45
 
@@ -25,50 +25,40 @@ echo "More details on submitting jobs here https://www.acrc.bris.ac.uk/protected
 
 module add languages/r/4.1.0
 
-while getopts i:w:o:d:c: flag
-do
-  case "$flag" in 
-    i) iterations=${OPTARG};;
-    w) warmup=${OPTARG};;
-    o) out_directory=${OPTARG};;
-    d) data_directory=${OPTARG};;
-    c) cores=${OPTARG};;
-  esac
-done
 
 
 
 if [ -z "$out_directory" ]
 then
-  out_directory="/user/work/lg14410/farm-size-analysis-modelling/outputs/"
+out_directory="/user/work/lg14410/farm-size-analysis-modelling/outputs/"
 else
   out_directory="/user/work/lg14410/farm-size-analysis-modelling/outputs/${out_directory}"
 fi
 
 if [ -z "$data_directory" ]
 then
-  data_directory="/user/work/lg14410/farm-size-analysis-modelling/data/"
+data_directory="/user/work/lg14410/farm-size-analysis-modelling/data/"
 else
   data_directory="/user/work/lg14410/farm-size-analysis-modelling/data/${data_directory}"
 fi
 
 if [ -z "$iterations" ]
 then
-  iterations=2000
+iterations=2000
 else
   iterations=$iterations
 fi
 
 if [ -z "$iterations" ]
 then
-  iterations=2000
+iterations=2000
 else
   iterations=$iterations
 fi
 
 if [ -z "$cores" ]
 then
-  cores=4
+cores=4
 else
   cores=$cores
 fi
@@ -83,7 +73,7 @@ echo "cores: $cores"
 
 
 
-Rscript "src/modelling/brms_anova_quantile.R" -i $iterations -w $warmup -d $data_directory -o $out_directory -c $cores -j ${SLURM_ARRAY_TASK_ID}
+Rscript "src/bc-run-scripts/array_test.R" -j ${SLURM_ARRAY_TASK_ID}
 
 unset iterations
 unset out_directory

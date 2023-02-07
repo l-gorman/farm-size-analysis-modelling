@@ -26,8 +26,8 @@ option_list = list(
               help="index for village quant combo")
 )
 
-opt_parser = OptionParser(option_list=option_list);
-opt = parse_args(opt_parser);
+opt_parser = OptionParser(option_list=option_list)
+opt = parse_args(opt_parser)
 
 
 
@@ -203,7 +203,6 @@ for (level_combo in level_combos){
 ###########################################################################################
 ###########################################################################################
 
-dir.create(paste0(opt$output,"/quantile_location/"))
 
 # for (level_combo in level_combos){
 #   

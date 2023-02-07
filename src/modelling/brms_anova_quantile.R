@@ -26,24 +26,26 @@ option_list = list(
               help="index for village quant combo")
 )
 
-opt_parser = OptionParser(option_list=option_list);
-opt = parse_args(opt_parser);
+opt_parser = OptionParser(option_list=option_list)
+opt = parse_args(opt_parser)
 
 
 
 
 
 
-# opt <- list(
-#   iter=2,
-#   warmup=1,
-#   data="./data/",
-#   output="./outputs/brm_anov_31_01_2023/",
-#   ncores=4, #Actually the number of chains
-#   workers=4
-#   # cores=9,
-#   
-# )
+opt <- list(
+  iter=2,
+  warmup=1,
+  data="./data/",
+  output="./outputs/brm_anov_31_01_2023/",
+  ncores=4, #Actually the number of chains
+  index=4
+  # cores=9,
+
+)
+
+opt$index <- as.numeric(index)
 
 
 
@@ -203,7 +205,6 @@ for (level_combo in level_combos){
 ###########################################################################################
 ###########################################################################################
 
-dir.create(paste0(opt$output,"/quantile_location/"))
 
 # for (level_combo in level_combos){
 #   
