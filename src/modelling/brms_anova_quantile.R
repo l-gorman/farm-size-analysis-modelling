@@ -8,6 +8,9 @@ library(ggdist)
 library(magrittr)
 library(optparse)
 
+library(foreach)
+library(doParallel)
+
 option_list = list(
   make_option(c("-i", "--iter"),  type='integer',
               help="Iterations"),
@@ -18,7 +21,9 @@ option_list = list(
   make_option(c("-o", "--output"), type='character',
               help="The directory where results will be written"),
   make_option(c("-c", "--ncores"), type='character',
-              help="The number of chains/cores")
+              help="The number of chains/cores"),
+  make_option(c("-p", "--workers"), type='character',
+              help="The number parallel workers for running multiple models"),
   
 )
 
@@ -26,13 +31,28 @@ opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
 
+
+
+
+# 
 # opt <- list(
 #   iter=2,
 #   warmup=1,
 #   data="./data/",
 #   output="./outputs/brm_anov_31_01_2023/",
-#   ncores=4
+#   ncores=4, #Actually the number of chains
+#   workers=4
+#   # cores=9,
+#   
 # )
+
+
+
+workers <- opt$workers
+cl <- parallel::makeCluster(workers)
+# register the cluster for using foreach
+doParallel::registerDoParallel(cl)
+
 
 dir.create(opt$output)
 
@@ -156,6 +176,22 @@ level_combos <- list(
 )
 
 
+village_quant_combos <- list()
+i <-1
+for (level_combo in level_combos){
+  for (quantile in seq(0.1,0.9,0.1)){
+    
+    village_quant_combos[[i]] <- list(
+      level_combo=level_combo,
+      quantile=quantile
+    )
+    i <- i + 1
+    
+  }
+  
+}
+
+
 
 ###########################################################################################
 ###########################################################################################
@@ -167,26 +203,42 @@ level_combos <- list(
 
 dir.create(paste0(opt$output,"/quantile_location/"))
 
-for (level_combo in level_combos){
+# for (level_combo in level_combos){
+#   
+#   
+#   for (quantile in seq(0.1,0.9,0.1)){
+#     result <- run_model(data,level_combo, quantile=quantile, sigma=F, iter=opt$iter, warmup=opt$warmup,ncores=opt$ncores)
+#     save(result,file=paste0(opt$output,"/quantile_location/",paste0(paste0(level_combo, collapse="_"),"_",quantile),".rda"))
+#   }
+#   
+#   
+#   
+#   
+# }
+
+dir.create(paste0(opt$output,"/quantile_location_test/"))
+
+foreach(i = c(1:length(village_quant_combos)),  .packages = c("brms")) %dopar% {
   
+  quantile <- village_quant_combos[[i]][["quantile"]]
+  level_combo <- village_quant_combos[[i]][["level_combo"]]
   
-  for (quantile in seq(0.1,0.9,0.1)){
-    result <- run_model(data,level_combo, quantile=quantile, sigma=F, iter=opt$iter, warmup=opt$warmup,ncores=opt$ncores)
-    save(result,file=paste0(opt$output,"/quantile_location/",paste0(paste0(level_combo, collapse="_"),"_",quantile),".rda"))
-  }
-  
-  
-  
-  
+  result <- run_model(data,level_combo, quantile=quantile, sigma=F, iter=opt$iter, warmup=opt$warmup,ncores=opt$ncores)
+  save(result,file=paste0(opt$output,"/quantile_location/",paste0(paste0(level_combo, collapse="_"),"_",quantile),".rda"))
 }
 
+
+
+
+
+# 
 # loadRData <- function(fileName){
 #   #loads an RData file, and returns it
 #   load(fileName)
 #   get(ls()[ls() != "fileName"])
 # }
-# d <- loadRData("outputs/brm_anov_31_01_2023/gaussian_location/ADM0_NAME.rda")
-# 
+#   d <- loadRData("outputs/brm_anov_31_01_2023/quantile_location/ADM0_NAME_ADM1_CODE_ADM2_CODE_village_0.8.rda")
+# # 
 
 
 

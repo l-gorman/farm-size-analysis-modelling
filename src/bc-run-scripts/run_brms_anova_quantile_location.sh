@@ -1,10 +1,10 @@
 #!/bin/bash
 
-#SBATCH --job-name=farm-size-modelling
+#SBATCH --job-name=brms_anova_mu
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=4
-#SBATCH --time=3-00:00:00
+#SBATCH --cpus-per-task=28
+#SBATCH --time=5-00:00:00
 #SBATCH --mem=36G
 #SBATCH --account=sscm012844
 
@@ -81,7 +81,7 @@ echo "cores: $cores"
 
 
 
-Rscript "src/modelling/brms_anova_quantile.R" -i $iterations -w $warmup -d $data_directory -o $out_directory -c $cores
+Rscript "src/modelling/brms_anova_quantile.R" -i $iterations -w $warmup -d $data_directory -o $out_directory -c $cores -p 7
 
 unset iterations
 unset out_directory
