@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH --job-name=brms_anova_mu
-#SBATCH -o ./Report/output.%a.out
+#SBATCH -o ./Report/brms_anova_mu.%a.out
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=4
