@@ -2,11 +2,13 @@
 
 #SBATCH --job-name=brms_anova_mu_sigma
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=28
-#SBATCH --cpus-per-task=1
-#SBATCH --time=5-00:00:00
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=4
+#SBATCH --time=0-01:00:00
 #SBATCH --mem=36G
 #SBATCH --account=sscm012844
+
+#SBATCH --array=1-45
 
 cd "${SLURM_SUBMIT_DIR}"
 
@@ -81,7 +83,7 @@ echo "cores: $cores"
 
 
 
-Rscript "src/modelling/brms_anova_quantile_sigma.R" -i $iterations -w $warmup -d $data_directory -o $out_directory -c $cores -p 7
+Rscript "src/modelling/brms_anova_quantile_sigma.R" -i $iterations -w $warmup -d $data_directory -o $out_directory -c $cores -j ${SLURM_ARRAY_TASK_ID}
 
 unset iterations
 unset out_directory

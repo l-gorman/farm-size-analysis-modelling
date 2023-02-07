@@ -22,9 +22,8 @@ option_list = list(
               help="The directory where results will be written"),
   make_option(c("-c", "--ncores"), type='character',
               help="The number of chains/cores"),
-  make_option(c("-p", "--workers"), type='character',
-              help="The number parallel workers for running multiple models")
-  
+  make_option(c("-j", "--index"), type='character',
+              help="index for village quant combo")
 )
 
 opt_parser = OptionParser(option_list=option_list);
@@ -48,10 +47,10 @@ opt = parse_args(opt_parser);
 
 
 
-workers <- opt$workers
-cl <- parallel::makeCluster(workers)
-# register the cluster for using foreach
-doParallel::registerDoParallel(cl)
+# workers <- opt$workers
+# cl <- parallel::makeCluster(workers)
+# # register the cluster for using foreach
+# doParallel::registerDoParallel(cl)
 
 
 dir.create(opt$output)
@@ -193,6 +192,9 @@ for (level_combo in level_combos){
 
 
 
+
+
+
 ###########################################################################################
 ###########################################################################################
 ###########################################################################################
@@ -218,14 +220,14 @@ dir.create(paste0(opt$output,"/quantile_location/"))
 
 dir.create(paste0(opt$output,"/quantile_location_scale/"))
 
-foreach(i = c(1:length(village_quant_combos)),  .packages = c("brms")) %dopar% {
-  
+# foreach(i = c(1:length(village_quant_combos)),  .packages = c("brms")) %dopar% {
+i <- opt$index
   quantile <- village_quant_combos[[i]][["quantile"]]
   level_combo <- village_quant_combos[[i]][["level_combo"]]
   
   result <- run_model(data,level_combo, quantile=quantile, sigma=T, iter=opt$iter, warmup=opt$warmup,ncores=opt$ncores)
   save(result,file=paste0(opt$output,"/quantile_location_scale/",paste0(paste0(level_combo, collapse="_"),"_",quantile),".rda"))
-}
+# }
 
 
 

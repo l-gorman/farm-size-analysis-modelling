@@ -1,4 +1,4 @@
-# sbatch src/bc-run-scripts/run_brms_anova_quantile_location.sh  -i 4000 -w 2000 -n 4 -o brms_anova_03_02_2023 
+# sbatch src/bc-run-scripts/run_brms_anova_quantile_location_scale.sh  -i 4000 -w 2000 -n 4 -o brms_anova_03_02_2023 
 library(brms)
 library(ggplot2)
 library(ggridges)
@@ -22,9 +22,8 @@ option_list = list(
               help="The directory where results will be written"),
   make_option(c("-c", "--ncores"), type='character',
               help="The number of chains/cores"),
-  make_option(c("-p", "--workers"), type='character',
-              help="The number parallel workers for running multiple models"),
-  
+  make_option(c("-j", "--index"), type='character',
+              help="index for village quant combo")
 )
 
 opt_parser = OptionParser(option_list=option_list);
@@ -34,7 +33,7 @@ opt = parse_args(opt_parser);
 
 
 
-# 
+
 # opt <- list(
 #   iter=2,
 #   warmup=1,
@@ -48,18 +47,10 @@ opt = parse_args(opt_parser);
 
 
 
-# cl <- startMPIcluster(count=2)
-# registerDoMPI(cl)
-
-# cl <- makeCluster(mpi.universe.size(), type='MPI')
-# registerDoParallel(cl)
-
-
-workers <- opt$workers
-
-cl <- parallel::makeCluster(workers)
-# register the cluster for using foreach
-doParallel::registerDoParallel(cl)
+# workers <- opt$workers
+# cl <- parallel::makeCluster(workers)
+# # register the cluster for using foreach
+# doParallel::registerDoParallel(cl)
 
 
 dir.create(opt$output)
@@ -201,6 +192,9 @@ for (level_combo in level_combos){
 
 
 
+
+
+
 ###########################################################################################
 ###########################################################################################
 ###########################################################################################
@@ -226,14 +220,14 @@ dir.create(paste0(opt$output,"/quantile_location/"))
 
 dir.create(paste0(opt$output,"/quantile_location/"))
 
-foreach(i = c(1:length(village_quant_combos)),  .packages = c("brms")) %dopar% {
-  
-  quantile <- village_quant_combos[[i]][["quantile"]]
-  level_combo <- village_quant_combos[[i]][["level_combo"]]
-  
-  result <- run_model(data,level_combo, quantile=quantile, sigma=F, iter=opt$iter, warmup=opt$warmup,ncores=opt$ncores)
-  save(result,file=paste0(opt$output,"/quantile_location/",paste0(paste0(level_combo, collapse="_"),"_",quantile),".rda"))
-}
+# foreach(i = c(1:length(village_quant_combos)),  .packages = c("brms")) %dopar% {
+i <- opt$index
+quantile <- village_quant_combos[[i]][["quantile"]]
+level_combo <- village_quant_combos[[i]][["level_combo"]]
+
+result <- run_model(data,level_combo, quantile=quantile, sigma=F, iter=opt$iter, warmup=opt$warmup,ncores=opt$ncores)
+save(result,file=paste0(opt$output,"/quantile_location/",paste0(paste0(level_combo, collapse="_"),"_",quantile),".rda"))
+# }
 
 
 
