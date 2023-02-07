@@ -42,7 +42,7 @@ opt <- list(
   ncores=4, #Actually the number of chains
   index=4
   # cores=9,
-
+  
 )
 
 opt$index <- as.numeric(index)
@@ -222,7 +222,7 @@ for (level_combo in level_combos){
 dir.create(paste0(opt$output,"/quantile_location/"))
 
 # foreach(i = c(1:length(village_quant_combos)),  .packages = c("brms")) %dopar% {
-i <- opt$index
+i <- as.numeric(opt$index)
 quantile <- village_quant_combos[[i]][["quantile"]]
 level_combo <- village_quant_combos[[i]][["level_combo"]]
 

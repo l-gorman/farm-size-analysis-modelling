@@ -220,12 +220,12 @@ for (level_combo in level_combos){
 dir.create(paste0(opt$output,"/quantile_location_scale/"))
 
 # foreach(i = c(1:length(village_quant_combos)),  .packages = c("brms")) %dopar% {
-i <- opt$index
-  quantile <- village_quant_combos[[i]][["quantile"]]
-  level_combo <- village_quant_combos[[i]][["level_combo"]]
-  
-  result <- run_model(data,level_combo, quantile=quantile, sigma=T, iter=opt$iter, warmup=opt$warmup,ncores=opt$ncores)
-  save(result,file=paste0(opt$output,"/quantile_location_scale/",paste0(paste0(level_combo, collapse="_"),"_",quantile),".rda"))
+i <- as.numeric(opt$index)
+quantile <- village_quant_combos[[i]][["quantile"]]
+level_combo <- village_quant_combos[[i]][["level_combo"]]
+
+result <- run_model(data,level_combo, quantile=quantile, sigma=T, iter=opt$iter, warmup=opt$warmup,ncores=opt$ncores)
+save(result,file=paste0(opt$output,"/quantile_location_scale/",paste0(paste0(level_combo, collapse="_"),"_",quantile),".rda"))
 # }
 
 
