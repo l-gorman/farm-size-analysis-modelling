@@ -5,8 +5,8 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=1
-#SBATCH --time=0-00:01:00
-#SBATCH --mem=1M
+#SBATCH --time=0-00:10:00
+#SBATCH --mem=1G
 #SBATCH --account=sscm012844
 #SBATCH --array=1-45
 
@@ -73,7 +73,7 @@ echo "cores: $cores"
 
 
 
-Rscript "src/bc-run-scripts/array_test.R" -j ${SLURM_ARRAY_TASK_ID}
+Rscript "./array_test.R" -j ${SLURM_ARRAY_TASK_ID}
 
 unset iterations
 unset out_directory
