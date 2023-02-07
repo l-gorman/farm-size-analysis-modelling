@@ -216,7 +216,7 @@ dir.create(paste0(opt$output,"/quantile_location/"))
 #   
 # }
 
-dir.create(paste0(opt$output,"/quantile_location_test_scale/"))
+dir.create(paste0(opt$output,"/quantile_location_scale/"))
 
 foreach(i = c(1:length(village_quant_combos)),  .packages = c("brms")) %dopar% {
   
