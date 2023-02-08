@@ -1,4 +1,4 @@
-# sbatch src/bc-run-scripts/run_brms_anova_quantile_location_scale.sh  -i 4000 -w 2000 -n 4 -o brms_anova_03_02_2023 
+# sbatch src/bc-run-scripts/run_brms_anova_quantile_location_scale.sh  -i 10000 -w 4000 -n 4 -o brms_anova_08_02_2023 
 library(brms)
 library(ggplot2)
 library(ggridges)
