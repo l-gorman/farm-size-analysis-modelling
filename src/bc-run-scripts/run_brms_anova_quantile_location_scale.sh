@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=brms_anova_mu_sigma
+#SBATCH --job-name=mu_s_q_brms_anova
 #SBATCH -o ./Report/brms_anova_mu_sigma.%a.out
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1

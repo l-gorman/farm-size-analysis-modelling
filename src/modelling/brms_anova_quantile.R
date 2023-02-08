@@ -33,19 +33,18 @@ opt = parse_args(opt_parser)
 
 
 
+# 
+# opt <- list(
+#   iter=2,
+#   warmup=1,
+#   data="./data/",
+#   output="./outputs/brm_anov_31_01_2023/",
+#   ncores=4, #Actually the number of chains
+#   index=4
+#   # cores=9,
+#   
+# )
 
-opt <- list(
-  iter=2,
-  warmup=1,
-  data="./data/",
-  output="./outputs/brm_anov_31_01_2023/",
-  ncores=4, #Actually the number of chains
-  index=4
-  # cores=9,
-  
-)
-
-opt$index <- as.numeric(index)
 
 
 
