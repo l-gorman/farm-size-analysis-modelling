@@ -63,7 +63,7 @@ model_files <- model_files[grepl(".rda", model_files,fixed=T)]
 final_result <- foreach(i=1:length(model_files),.combine=rbind,.packages = c("magrittr", "tidybayes"))%dopar%{
   
   model_file <- model_files[i]
-  m <- loadRData(paste0(opt$indirectory,model_file))
+  m <- loadRData(paste0(opt$indirectory,"/",model_file))
   
   
   model <- model_file %>% 
