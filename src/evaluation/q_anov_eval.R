@@ -1,4 +1,5 @@
 # sbatch src/bc-run-scripts/compare_quantile_location_models.sh   -c 28 -d quantile_location -o model_summaries  
+# sbatch src/bc-run-scripts/compare_quantile_location_models.sh   -c 28 -d quantile_location -o model_summaries  
 
 
 library(brms)
@@ -76,7 +77,7 @@ final_result <- foreach(i=1:length(model_files),.combine=rbind,.packages = c("ma
   
   
   result <- m %>%
-    gather_draws(b_Intercept,`.*sd_ADM0_NAME.*`, regex = T
+    gather_draws(b_Intercept,sigma,`.*sd_ADM0_NAME.*`, regex = T
     ) %>%
     median_qi()
   
