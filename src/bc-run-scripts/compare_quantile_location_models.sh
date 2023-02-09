@@ -44,9 +44,9 @@ fi
 
 if [ -z "$data_directory" ]
 then
-  data_directory="/user/work/lg14410/farm-size-analysis-modelling/data/"
+  data_directory="/user/work/lg14410/farm-size-analysis-modelling/outputs/"
 else
-  data_directory="/user/work/lg14410/farm-size-analysis-modelling/data/${data_directory}"
+  data_directory="/user/work/lg14410/farm-size-analysis-modelling/outputs/${data_directory}"
 fi
 
 
