@@ -1,4 +1,4 @@
-# sbatch src/bc-run-scripts/run_brms_anova_quantile_location_scale.sh   -c 28 -d brms_anova_08_02_2023/quantile_location -o model_summaries  
+# sbatch src/bc-run-scripts/compare_quantile_location_models.sh   -c 28 -d brms_anova_08_02_2023/quantile_location -o model_summaries  
 
 
 library(brms)
