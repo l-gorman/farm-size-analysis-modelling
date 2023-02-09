@@ -91,7 +91,7 @@ final_result <- foreach(i=1:length(model_files),.combine=rbind,.packages = c("ma
 
 dir.create(opt$outdirectory)
 
-readr::write_csv(final_result,paste0(opt$outdirectory, "/",""))
+readr::write_csv(final_result,paste0(opt$outdirectory, "/",opt$outname))
 
 
 
