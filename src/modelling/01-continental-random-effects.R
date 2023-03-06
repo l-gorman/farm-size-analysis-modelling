@@ -34,11 +34,13 @@ opt = parse_args(opt_parser);
 #   ncores=4
 # )
 
-dir.create(opt$output)
 
 
 opt$data <- gsub("/$", "", opt$data)
 opt$output <- gsub("/$", "", opt$output)
+
+dir.create(opt$output)
+
 
 writeLines("test_file_output",paste0(opt$output,"/test_file.txt"))
 
