@@ -187,7 +187,7 @@ for (country in country_codes){
   temp_data <-indicator_data[indicator_data$iso_country_code=="country",]
   dir.create(paste0(opt$output,"/continental_gaussian_location/per_country/",country,"/"))
   result <- run_model(indicator_data,levels =  c("ADM2_CODE","village"), sigma=F, iter=opt$iter, warmup=opt$warmup,ncores=opt$ncores)
-  save(result,file=paste0(opt$output,"/continental_gaussian_location/per_country/",country,"/",paste0(level_combo, collapse="_"),".rda"))
+  save(result,file=paste0(opt$output,"/continental_gaussian_location/per_country/",country,"/",paste0( c("ADM2_CODE","village"), collapse="_"),".rda"))
   
 }
 
