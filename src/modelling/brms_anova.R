@@ -1,4 +1,4 @@
-# sbatch src/bc-run-scripts/run_brms_anova_location.sh  -i 1000 -w 1000 -n 4 -o brms_anova_03_02_2023 
+# sbatch src/bc-run-scripts/run_brms_anova_location.sh  -i 2000 -w 1000 -n 4 -o brms_anova_03_02_2023 
 library(brms)
 library(ggplot2)
 library(ggridges)
@@ -26,13 +26,13 @@ opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
 
-# opt <- list(
-#   iter=2,
-#   warmup=1,
-#   data="./data/",
-#   output="./outputs/brm_anov_31_01_2023/",
-#   ncores=4
-# )
+opt <- list(
+  iter=2000,
+  warmup=1000,
+  data="./data/",
+  output="./outputs/gaussian_location/",
+  ncores=4
+)
 
 dir.create(opt$output)
 
@@ -109,8 +109,18 @@ indicator_data <- readr::read_csv(paste0(opt$data,"/prepped-data/rhomis-ee-gaez.
 
 indicator_data <- indicator_data[!is.na(indicator_data$x_gps_latitude) & !is.na(indicator_data$x_gps_longitude),]
 indicator_data <- indicator_data[!is.na(indicator_data$land_cultivated_ha),]
+
 indicator_data <- indicator_data[!is.na(indicator_data$village),]
 indicator_data <- indicator_data[indicator_data$land_cultivated_ha>0,]
+
+indicator_data$fies_score
+table(!is.na(indicator_data$hfias_status))
+
+indicator_data$hfias_numeric<- NA
+indicator_data$hfias_numeric[indicator_data$hfias_status=="severely_fi"] <- 1
+indicator_data$hfias_numeric[indicator_data$hfias_status=="moderately_fi"] <- 2
+indicator_data$hfias_numeric[indicator_data$hfias_status=="mildly_fi"] <- 3
+indicator_data$hfias_numeric[indicator_data$hfias_status=="food_secure"] <- 4
 
 land_categories <-  readr::read_csv(paste0(opt$data,"/prepped-data/land_cover_classes.csv"))
 
@@ -176,6 +186,41 @@ for (level_combo in level_combos){
   
   
 }
+
+
+
+result <- brms::brm(
+  formula="hfias_numeric ~ 1 + (1|ADM0_NAME/ADM2_CODE/village)",
+  data = indicator_data,
+  family=gaussian(),
+  cores = 4,
+  warmup = 1000,
+  iter=2000
+)
+
+save(result,file=paste0(opt$output,"/gaussian_location/","hfias_ADM0_NAME_ADM2_CODE_village",".rda"))
+
+
+
+
+result <- brms::brm(
+  formula="log(total_income_lcu_per_year) ~ 1 + (1|ADM0_NAME/ADM2_CODE/village)",
+  data = indicator_data,
+  family=gaussian(),
+  cores = 4,
+  warmup = 1000,
+  iter=2000
+)
+
+
+temp <- indicator_data %>% 
+  group_by(village) %>% 
+  summarise(village_count = n())
+
+ggplot(temp, aes(x=village_count))+
+  geom_histogram(fill="dodgerblue4", color="black",binwidth = 10,boundary=0)+ 
+  scale_x_continuous( breaks=seq(0,120,10))+
+  labs(title="Number of householdes per Village")
 
 # loadRData <- function(fileName){
 #   #loads an RData file, and returns it

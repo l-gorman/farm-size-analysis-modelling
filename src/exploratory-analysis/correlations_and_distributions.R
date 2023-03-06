@@ -26,7 +26,7 @@ library(ggExtra)
 library(RColorBrewer)
 library(GGally)
 
-library(moments) # Package for skewness
+# library(moments) # Package for skewness
 library(gamlss) # Gaussian additive models for location, scale, and shape
 # library(bamlss) # Bayesian additive models for location, scale, and shape
 library(brms) # General package for bayesian models with lme4 syntax and stan backend
@@ -42,8 +42,8 @@ library(factoextra) # Extra pca features
 #                         crs = 4326, agr = "constant", remove = F)
 
 indicator_data <- readr::read_csv("./data/prepped-data/rhomis-ee-gaez.csv")
-indicator_data <- indicator_data[!is.na(indicator_data$gps_lat) & !is.na(indicator_data$gps_lon),]
-indicator_data_geo <- st_as_sf(indicator_data, coords = c("gps_lon", "gps_lat"), 
+indicator_data <- indicator_data[!is.na(indicator_data$x_gps_latitude) & !is.na(indicator_data$x_gps_longitude),]
+indicator_data_geo <- st_as_sf(indicator_data, coords = c("x_gps_latitude", "x_gps_longitude"), 
                                crs = 4326, agr = "constant", remove = F)
 
 
@@ -126,6 +126,12 @@ indicator_data <- indicator_data[indicator_data[c("land_cultivated_ha")] != outl
 
 
 
+indicator_data$hfias_numeric<- NA
+indicator_data$hfias_numeric[indicator_data$hfias_status=="severely_fi"] <- 1
+indicator_data$hfias_numeric[indicator_data$hfias_status=="moderately_fi"] <- 2
+indicator_data$hfias_numeric[indicator_data$hfias_status=="mildly_fi"] <- 3
+indicator_data$hfias_numeric[indicator_data$hfias_status=="food_secure"] <- 4
+
 
 
 
@@ -155,7 +161,8 @@ aez_33 <- grep("AEZ_Classes_33_", colnames(indicator_data), value=T)
 
 
 
-y <-c("land_cultivated_ha")
+# y <-c("land_cultivated_ha")
+y <-c("hfias_numeric")
 
 
 # Looking at subnational indicators vas land cultivated
@@ -168,8 +175,8 @@ corr_matrix <- corr_matrix %>% pivot_longer(cols = colnames(corr_matrix)[colname
 colnames(corr_matrix) <- c("var1", "var2", "value")
 
 
-land_cult_corr <- corr_matrix[corr_matrix$var1=="land_cultivated_ha", ]
-land_cult_corr <- land_cult_corr[land_cult_corr$var2!="land_cultivated_ha",]
+land_cult_corr <- corr_matrix[corr_matrix$var1==y, ]
+land_cult_corr <- land_cult_corr[land_cult_corr$var2!=y,]
 
 land_cult_corr$var2 <- gsub("AEZ_Classes_33_", "",land_cult_corr$var2)
 
@@ -221,10 +228,10 @@ ggplot(data = land_cult_corr, aes(y=var2, x=value)) +
   geom_point( size=4, aes(x=value, color=var_group)) +
   scale_color_manual(values=colors) +
   
-  coord_cartesian(xlim = c(-0.3, 0.3), # This focuses the x-axis on the range of interest
+  coord_cartesian(xlim = c(-0.4, 0.4), # This focuses the x-axis on the range of interest
                   clip = 'off')+
  
-labs(title="Correlations with Land Cultivated (ha)",
+labs(title="Correlations with HFIAS",
      x ="Pearsons Correlation Coeff", y ="Landscape predictiors",
      color="Variable Class",
      caption = "\nLandscape predictors sourced from GAEZ v4 and Google Earth Engine.
@@ -239,6 +246,25 @@ labs(title="Correlations with Land Cultivated (ha)",
          axis.text.y = element_text(colour = land_cult_corr$color)
    )           
 
+
+
+# Corellation with Household Level
+x_hh <- c("hh_size_mae",
+          "livestock_tlu",
+          "land_cultivated_ha",
+          "ppi_likelihood")
+
+test_df <- indicator_data[c(x_hh,y)]
+test_df <- test_df[complete.cases(test_df),]
+
+corr_hh <- round(cor(test_df),2) %>% tibble::as_tibble()
+
+corr_hh$var <- colnames(corr_hh)
+corr_hh <- corr_hh %>% pivot_longer(cols = colnames(corr_hh)[colnames(corr_hh)!="var"])
+
+colnames(corr_hh) <- c("var1", "var2", "value")
+corr_hh <- corr_hh[corr_hh$var1==y, ]
+corr_hh <- corr_hh[corr_hh$var2!=y,]
 
 # Correlation with AEZ classes
 y_index <- which(colnames(indicator_data)==y)

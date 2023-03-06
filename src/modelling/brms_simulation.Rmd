@@ -1,0 +1,332 @@
+---
+title: "Multi Level and Quantile Models in BRMS"
+output:
+  html_document:
+    df_print: paged
+editor_options:
+  chunk_output_type: inline
+---
+
+A notebook which is testing the implementation of 
+BRMS quantile hierarchical models using generated
+datasets.
+
+
+### No Relationship
+
+First lets generate some data where there is absolutely
+no relationship to it at all. We will fit a normal
+linear model. 
+
+$$
+y_i\;{\sim}\;\mathcal{N}(\mu_i, \sigma_i)
+$$
+In this instance, we will assume no relationshi
+
+We will then fit some quantile models. In the quantile bayesian
+quantile regression, we fit an asymmetric Laplace distribution:
+
+$$
+y_i\;=\;Laplace(m_i, \lambda_i,p_i)
+$$
+$m$ is a location parameter, $\lamda$ is a scale parameter, and $p$ is a quantile/percentile
+parameter, representing the quantile of interest. When used for Bayesian inference, the
+asymmetric laplace funtion displays the same properties as the loss function used in quantile
+regression. 
+$$
+\displaystyle f(x;m,\lambda ,p)={\frac {p(1-p)}{\lambda }}{\begin{cases}\exp \left(-((p-1)/\lambda )(x-m)\right)&{\text{if }}x\leq m\\[4pt]\exp(-(p/\lambda )(x-m))&{\text{if }}x>m\end{cases}}
+$$
+
+We will visualise the results and see how they compare.
+
+```{r, message=F, warning=FALSE}
+
+library(ggplot2)
+library(ggExtra)
+library(brms)
+library(bayesplot)
+library(tidybayes)
+library(magrittr)
+library(tidyr)
+library(dplyr)
+
+number_of_samples <- 500
+
+# Generating random points
+# Using skew normal distribution, but skewness is 0
+X <- brms::rskew_normal(n=number_of_samples,mu = 10,sigma = 1,alpha = 0)
+y <- brms::rskew_normal(n=number_of_samples,mu = 2,sigma = 2,alpha = 0)
+
+df <- tibble::as_tibble(list(
+  x=X,
+  y=y
+))
+
+
+
+plot <- ggplot(df, aes(x,y))+
+  geom_point()
+
+plot <- ggMarginal(plot,type="histogram")
+plot
+
+```
+##
+
+```{r, results='hide'}
+m <- brms::brm(y~x,data = df)
+
+
+
+```
+```{r}
+fitted_values <- fitted(m,dpar="mu") %>% as_tibble()
+
+fitted_values$x <- df$x
+ggplot(df, aes(x,y))+
+  geom_point()+
+  geom_ribbon(data=fitted_values,mapping = aes(x=x, ymin=Q2.5 ,ymax=Q97.5),fill="dodgerblue4", alpha=0.3)+
+  geom_line(data=fitted_values,mapping = aes(x=x, y=Estimate))
+
+```
+
+```{r results='hide'}
+m_q0.25 <- brms::brm(bf(y~x, 
+                        quantile=0.25),
+                     data = df,
+                     
+                     family=asym_laplace())
+
+m_q0.75 <- brms::brm(bf(y~x, 
+                        quantile=0.75),
+                     data=df,
+                     family=asym_laplace())
+```
+
+
+```{r}
+
+fitted_values_q0.25 <- fitted(m_q0.25,dpar="mu") %>% as_tibble()
+fitted_values_q0.25$x <- df$x
+fitted_values_q0.75 <- fitted(m_q0.75,dpar="mu") %>% as_tibble()
+fitted_values_q0.75$x <- df$x
+
+fitted_values$x <- df$x
+
+ggplot(df, aes(x,y))+
+  geom_point()+
+  
+  geom_ribbon(data=fitted_values,
+              mapping = aes(x=x, ymin=Q2.5 ,ymax=Q97.5, fill="Mean"),
+              
+              alpha=0.3)+
+  
+  geom_line(data=fitted_values,mapping = aes(x=x, y=Estimate))+
+  
+  geom_ribbon(data=fitted_values_q0.25,
+              mapping = aes(x=x, ymin=Q2.5 ,ymax=Q97.5, fill="Q0.25"),
+              
+              alpha=0.3)+
+  
+  geom_line(data=fitted_values_q0.25,mapping = aes(x=x, y=Estimate))+
+  
+  geom_ribbon(data=fitted_values_q0.75,
+              mapping = aes(x=x, ymin=Q2.5 ,ymax=Q97.5,  fill="Q0.75"),
+              alpha=0.3)+
+  
+  
+  geom_line(data=fitted_values_q0.75,mapping = aes(x=x, y=Estimate))+
+  scale_fill_hue(labels = c("Mean", "Q0.25", "Q0.75"))
+
+
+
+
+
+
+```
+
+```{r}
+
+number_of_samples <- 500
+
+X <- cbind(1, runif(number_of_samples, 0, 100)) # Generate N uniform random numbers between 0-100
+
+B_mu <- c(10, 0.2)
+B_sigma <- c(0, 0.022)
+B_alpha <- c(0, 0)
+
+
+mu <- X %*% B_mu # Matrix Multiplication
+sigma <- exp(X %*% B_sigma)
+alpha <- exp(X %*% B_alpha)
+
+
+y <- rnorm(N, mu, sigma)
+sim_data <- data.frame(y, X)
+
+# Generating random points
+# Using skew normal distribution, but skewness is 0
+y <- brms::rskew_normal(n=number_of_samples,mu = mu,sigma = sigma,alpha = alpha)
+
+df <- tibble::as_tibble(list(
+  x=X[,2],
+  y=y
+))
+
+
+
+plot <- ggplot(df, aes(x,y))+
+  geom_point()
+
+plot <- ggMarginal(plot,type="histogram")
+plot
+
+
+
+```
+```{r results='hide'}
+m <- brms::brm(y~x,data = df)
+m_q0.25 <- brms::brm(bf(y~x, 
+                        quantile=0.25),
+                     data = df,
+                     
+                     family=asym_laplace())
+
+m_q0.75 <- brms::brm(bf(y~x, 
+                        quantile=0.75),
+                     data=df,
+                     family=asym_laplace())
+
+```
+
+
+```{r}
+
+fitted_values_m <- fitted(m,dpar="mu") %>% as_tibble()
+fitted_values_m$x <- df$x
+fitted_values_q0.25 <- fitted(m_q0.25,dpar="mu") %>% as_tibble()
+fitted_values_q0.25$x <- df$x
+fitted_values_q0.75 <- fitted(m_q0.75,dpar="mu") %>% as_tibble()
+fitted_values_q0.75$x <- df$x
+
+
+ggplot(df, aes(x,y))+
+  geom_point()+
+  
+  geom_ribbon(data=fitted_values_m,
+              mapping = aes(x=x, ymin=Q2.5 ,ymax=Q97.5, fill="Mean"),
+              
+              alpha=0.3)+
+  
+  geom_line(data=fitted_values_m,mapping = aes(x=x, y=Estimate))+
+  
+  geom_ribbon(data=fitted_values_q0.25,
+              mapping = aes(x=x, ymin=Q2.5 ,ymax=Q97.5, fill="Q0.25"),
+              
+              alpha=0.3)+
+  
+  geom_line(data=fitted_values_q0.25,mapping = aes(x=x, y=Estimate))+
+  
+  geom_ribbon(data=fitted_values_q0.75,
+              mapping = aes(x=x, ymin=Q2.5 ,ymax=Q97.5,  fill="Q0.75"),
+              alpha=0.3)+
+  
+  
+  geom_line(data=fitted_values_q0.75,mapping = aes(x=x, y=Estimate))+
+  scale_fill_hue(labels = c("Mean", "Q0.25", "Q0.75"))
+
+
+
+```
+# Generating Multi Level Data
+
+```{r}
+
+
+
+#' Generate Multi-Level Data
+#'
+#' @param n 
+#' @param intercept 
+#' @param level_1_intercept 
+#' @param level_1_sd 
+#' @param level_2_intercept 
+#' @param level_2_sd 
+#' @param sigma 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+gen_lg_data <- function(
+  n,
+  intercept,
+  
+  level_1_intercept,
+  level_1_sd,
+  
+  level_2_intercept,
+  level_2_sd,
+  
+  sigma,
+    J, cs, gam, G, sigma2 = 1
+    
+    ) {
+  
+  
+  
+  X <- cbind(1, seq_len(cs) - 1)  # for each individual
+  X <- X[rep(seq_len(cs), J), ]  # repeat each row cs times
+  pid <- seq_len(J)  # individual id
+  pid <- rep(pid, each = cs)  # repeat each ID cs times
+  # Generate person-level (lv-2) random effects
+  uj <- rmnorm(J, mean = rep(0, 2), varcov = G)
+  # Generate repeated-measure-level (lv-1) error term
+  eij <- rnorm(J * cs, sd = sqrt(sigma2))
+  # Compute beta_j's
+  betaj <- matrix(gam, nrow = J, ncol = 2, byrow = TRUE) + uj
+  # Compute outcome:
+  y <- rowSums(X * betaj[pid, ]) + eij
+  # Form a data frame
+  sim_dat1 <- tibble(y, time = X[ , 2], pid)
+  # Return data
+  return(sim_dat1)
+}
+
+number_of_samples <- 500
+
+X <- cbind(1, runif(number_of_samples, 0, 100)) # Generate N uniform random numbers between 0-100
+
+B_mu <- c(10, 0.2)
+B_sigma <- c(0, 0.022)
+B_alpha <- c(0, 0)
+
+
+mu <- X %*% B_mu # Matrix Multiplication
+sigma <- exp(X %*% B_sigma)
+alpha <- exp(X %*% B_alpha)
+
+
+y <- rnorm(N, mu, sigma)
+sim_data <- data.frame(y, X)
+
+# Generating random points
+# Using skew normal distribution, but skewness is 0
+y <- brms::rskew_normal(n=number_of_samples,mu = mu,sigma = sigma,alpha = alpha)
+
+df <- tibble::as_tibble(list(
+  x=X[,2],
+  y=y
+))
+
+
+
+plot <- ggplot(df, aes(x,y))+
+  geom_point()
+
+plot <- ggMarginal(plot,type="histogram")
+plot
+
+
+
+```
