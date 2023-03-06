@@ -81,7 +81,7 @@ echo "cores: $cores"
 
 
 
-Rscript "src/modelling/brms_anova.R" -i $iterations -w $warmup -d $data_directory -o $out_directory -c $cores
+Rscript "src/modelling/01-continental-random-effects.R" -i $iterations -w $warmup -d $data_directory -o $out_directory -c $cores
 
 unset iterations
 unset out_directory
