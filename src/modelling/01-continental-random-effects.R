@@ -199,7 +199,7 @@ for (level_combo in level_combos){
 #   iter=2000
 # )
 
-save(result,file=paste0(opt$output,"/continental_gaussian_location/","hfias_ADM0_NAME_ADM2_CODE_village",".rda"))
+# save(result,file=paste0(opt$output,"/continental_gaussian_location/","hfias_ADM0_NAME_ADM2_CODE_village",".rda"))
 
 
 

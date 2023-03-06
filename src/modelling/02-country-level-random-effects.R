@@ -158,14 +158,14 @@ indicator_data$geo_id <- paste0(indicator_data$ADM0_CODE, "_",
 
 
 
-level_combos <- list(
-  # c("ADM0_NAME"),
-  # c("ADM0_NAME","ADM1_CODE"),
-  # c("ADM0_NAME","ADM1_CODE","ADM2_CODE"),
-  # c("ADM0_NAME","ADM1_CODE","ADM2_CODE","village"),
-  
-  c("ADM2_CODE","village")
-)
+# level_combos <- list(
+#   # c("ADM0_NAME"),
+#   # c("ADM0_NAME","ADM1_CODE"),
+#   # c("ADM0_NAME","ADM1_CODE","ADM2_CODE"),
+#   # c("ADM0_NAME","ADM1_CODE","ADM2_CODE","village"),
+#   
+#   c("ADM2_CODE","village")
+# )
 
 
 
@@ -179,32 +179,19 @@ level_combos <- list(
 
 dir.create(paste0(opt$output,"/continental_gaussian_location/"))
 
-for (level_combo in level_combos){
-  
-  
-  result <- run_model(data,level_combo, sigma=F, iter=opt$iter, warmup=opt$warmup,ncores=opt$ncores)
-  save(result,file=paste0(opt$output,"/continental_gaussian_location/",paste0(level_combo, collapse="_"),".rda"))
+dir.create(paste0(opt$output,"/continental_gaussian_location/per_country"))
+
+
+country_codes <- unique(indicator_data$iso_country_code)
+for (country in country_codes){
+  temp_data <-indicator_data[indicator_data$iso_country_code=="country"]
+  dir.create(paste0(opt$output,"/continental_gaussian_location/per_country/",county,"/"))
+  result <- run_model(indicator_data,levels =  c("ADM2_CODE","village"), sigma=F, iter=opt$iter, warmup=opt$warmup,ncores=opt$ncores)
+  save(result,file=paste0(opt$output,"/continental_gaussian_location/per_country/",paste0(level_combo, collapse="_"),".rda"))
   
   
   
 }
-
-
-result <- brms::brm(
-  formula="hfias_numeric ~ 1 + (1|ADM0_NAME/ADM2_CODE/village)",
-  data = indicator_data,
-  family=gaussian(),
-  cores = 4,
-  warmup = 1000,
-  iter=2000
-)
-
-save(result,file=paste0(opt$output,"/continental_gaussian_location/","hfias_ADM0_NAME_ADM2_CODE_village",".rda"))
-
-
-
-
-
 
 
 
