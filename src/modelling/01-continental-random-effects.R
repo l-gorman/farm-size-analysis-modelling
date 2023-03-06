@@ -182,7 +182,7 @@ dir.create(paste0(opt$output,"/continental_gaussian_location/"))
 for (level_combo in level_combos){
   
   
-  result <- run_model(data,level_combo, sigma=F, iter=opt$iter, warmup=opt$warmup,ncores=opt$ncores)
+  result <- run_model(data = indicator_data,level_combo, sigma=F, iter=opt$iter, warmup=opt$warmup,ncores=opt$ncores)
   save(result,file=paste0(opt$output,"/continental_gaussian_location/",paste0(level_combo, collapse="_"),".rda"))
   
   
@@ -190,14 +190,14 @@ for (level_combo in level_combos){
 }
 
 
-result <- brms::brm(
-  formula="hfias_numeric ~ 1 + (1|ADM0_NAME/ADM2_CODE/village)",
-  data = indicator_data,
-  family=gaussian(),
-  cores = 4,
-  warmup = 1000,
-  iter=2000
-)
+# result <- brms::brm(
+#   formula="hfias_numeric ~ 1 + (1|ADM0_NAME/ADM2_CODE/village)",
+#   data = indicator_data,
+#   family=gaussian(),
+#   cores = 4,
+#   warmup = 1000,
+#   iter=2000
+# )
 
 save(result,file=paste0(opt$output,"/continental_gaussian_location/","hfias_ADM0_NAME_ADM2_CODE_village",".rda"))
 
