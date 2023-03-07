@@ -117,22 +117,3 @@ for (country_dir in all_countries){
 }
 
 
-brm_anov_vpc <-  vpc( 
-  model,
-  c( "sd_ADM0_NAME__Intercept",
-     "sd_ADM0_NAME:ADM2_CODE__Intercept",
-     "sd_ADM0_NAME:ADM2_CODE:village__Intercept",
-     "sigma"))
-
-
-
-
-model_name <- "ADM0_NAME_ADM2_CODE_village"
-
-
-
-
-
-
-
-

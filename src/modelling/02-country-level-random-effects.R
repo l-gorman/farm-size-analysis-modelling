@@ -24,8 +24,8 @@ option_list = list(
 
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
-
-
+# 
+# 
 # opt <- list(
 #   iter=2000,
 #   warmup=1000,
@@ -93,7 +93,7 @@ run_model <- function(data,levels, quantile=NULL, sigma, iter, warmup,ncores ){
   
   result <- brms::brm(
     formula=final_formula,
-    data = indicator_data,
+    data = data,
     family=family,
     cores = ncores,
     warmup = warmup,
@@ -184,11 +184,11 @@ dir.create(paste0(opt$output,"/continental_gaussian_location/per_country"))
 
 country_codes <- unique(indicator_data$iso_country_code)
 for (country in country_codes){
-  temp_data <-indicator_data[indicator_data$iso_country_code=="country",]
+  temp_data <-indicator_data[indicator_data$iso_country_code==country,]
   dir.create(paste0(opt$output,"/continental_gaussian_location/per_country/",country,"/"))
   result <- run_model(temp_data,levels =  c("ADM2_CODE","village"), sigma=F, iter=opt$iter, warmup=opt$warmup,ncores=opt$ncores)
   save(result,file=paste0(opt$output,"/continental_gaussian_location/per_country/",country,"/",paste0( c("ADM2_CODE","village"), collapse="_"),".rda"))
-  
+
 }
 
 
