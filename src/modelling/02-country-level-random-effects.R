@@ -26,13 +26,13 @@ opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 # 
 # 
-# opt <- list(
-#   iter=2000,
-#   warmup=1000,
-#   data="./data/",
-#   output="./outputs/continental_gaussian_location/",
-#   ncores=4
-# )
+opt <- list(
+  iter=20,
+  warmup=10,
+  data="./data/",
+  output="./outputs/continental_gaussian_location_test/",
+  ncores=4
+)
 
 
 
@@ -188,7 +188,6 @@ for (country in country_codes){
   dir.create(paste0(opt$output,"/continental_gaussian_location/per_country/",country,"/"))
   result <- run_model(temp_data,levels =  c("ADM2_CODE","village"), sigma=F, iter=opt$iter, warmup=opt$warmup,ncores=opt$ncores)
   save(result,file=paste0(opt$output,"/continental_gaussian_location/per_country/",country,"/",paste0( c("ADM2_CODE","village"), collapse="_"),".rda"))
-
 }
 
 
