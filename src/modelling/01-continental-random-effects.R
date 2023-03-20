@@ -1,4 +1,4 @@
-# sbatch src/bc-run-scripts/run_brms_anova_location.sh  -i 2000 -w 1000 -n 4 -o brms_anova_food_sec_06_03_2023
+# sbatch src/bc-run-scripts/run_brms_anova_location.sh  -i 2000 -w 1000 -n 4 -o brms_anova_21_03_2023
 library(brms)
 library(ggplot2)
 library(ggridges)
@@ -25,7 +25,7 @@ option_list = list(
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
-
+# 
 # opt <- list(
 #   iter=2000,
 #   warmup=1000,
@@ -39,7 +39,7 @@ opt = parse_args(opt_parser);
 opt$data <- gsub("/$", "", opt$data)
 opt$output <- gsub("/$", "", opt$output)
 
-dir.create(opt$output)
+dir.create(opt$output,showWarnings = F)
 
 
 writeLines("test_file_output",paste0(opt$output,"/test_file.txt"))
@@ -107,45 +107,24 @@ run_model <- function(data,levels, quantile=NULL, sigma, iter, warmup,ncores ){
 
 
 
-indicator_data <- readr::read_csv(paste0(opt$data,"/prepped-data/rhomis-ee-gaez.csv"))
+indicator_data <- readr::read_csv(paste0(opt$data,"/prepped-data/rhomis-gaez-gdl.csv"))
 
 indicator_data <- indicator_data[!is.na(indicator_data$x_gps_latitude) & !is.na(indicator_data$x_gps_longitude),]
-# indicator_data <- indicator_data[!is.na(indicator_data$land_cultivated_ha),]
+indicator_data <- indicator_data[!is.na(indicator_data$land_cultivated_ha),]
+# indicator_data <- indicator_data[!is.na(indicator_data$hfias_status),]
 
 indicator_data <- indicator_data[!is.na(indicator_data$village),]
 # indicator_data <- indicator_data[indicator_data$land_cultivated_ha>0,]
 
-indicator_data$fies_score
-table(!is.na(indicator_data$hfias_status))
+# indicator_data$fies_score
+# table(!is.na(indicator_data$hfias_status))
+# 
+# indicator_data$hfias_numeric<- NA
+# indicator_data$hfias_numeric[indicator_data$hfias_status=="severely_fi"] <- 1
+# indicator_data$hfias_numeric[indicator_data$hfias_status=="moderately_fi"] <- 2
+# indicator_data$hfias_numeric[indicator_data$hfias_status=="mildly_fi"] <- 3
+# indicator_data$hfias_numeric[indicator_data$hfias_status=="food_secure"] <- 4
 
-indicator_data$hfias_numeric<- NA
-indicator_data$hfias_numeric[indicator_data$hfias_status=="severely_fi"] <- 1
-indicator_data$hfias_numeric[indicator_data$hfias_status=="moderately_fi"] <- 2
-indicator_data$hfias_numeric[indicator_data$hfias_status=="mildly_fi"] <- 3
-indicator_data$hfias_numeric[indicator_data$hfias_status=="food_secure"] <- 4
-
-land_categories <-  readr::read_csv(paste0(opt$data,"/prepped-data/land_cover_classes.csv"))
-
-land_cat_columns <- paste0("land_cat_",c(1:17))
-indicator_data[land_cat_columns] <- lapply(indicator_data[land_cat_columns] , function(column){
-  column[is.na(column)] <- 0
-  # Dividing the number of pixels by total pixel count for that area
-  column <- column/indicator_data$pixelCount
-  return(column)
-}) %>% dplyr::bind_cols()
-
-
-new_land_cat_columns <- land_categories$Tag
-colnames(indicator_data)[colnames(indicator_data) %in% land_cat_columns] <- new_land_cat_columns
-# colnames(fao_level_2)[colnames(fao_level_2) %in% land_cat_columns] <- new_land_cat_columns
-
-colnames(indicator_data)[colnames(indicator_data) == "accessibility_mean"] <-"healthcare_traveltime"
-colnames(indicator_data)[colnames(indicator_data) == "b1_mean_mean"] <- "nightlights"
-colnames(indicator_data)[colnames(indicator_data) == "population_density_mean_mean"] <- "population_density"
-
-colnames(indicator_data)[colnames(indicator_data) == "elevation_mean"] <- "elevation"
-colnames(indicator_data)[colnames(indicator_data) == "NDVI_mean_mean"] <- "ndvi"
-colnames(indicator_data)[colnames(indicator_data) == "constant_mean"] <- "topographic_diversity"
 
 
 
@@ -157,14 +136,23 @@ indicator_data$geo_id <- paste0(indicator_data$ADM0_CODE, "_",
 
 
 
+# 
+# level_combos <- list(
+#   c("ADM0_NAME"),
+#   c("ADM0_NAME","ADM1_CODE"),
+#   c("ADM0_NAME","ADM1_CODE","ADM2_CODE"),
+#   c("ADM0_NAME","ADM1_CODE","ADM2_CODE","village"),
+#   
+#   c("ADM0_NAME","ADM2_CODE","village")
+# )
 
 level_combos <- list(
-  c("ADM0_NAME"),
-  c("ADM0_NAME","ADM1_CODE"),
-  c("ADM0_NAME","ADM1_CODE","ADM2_CODE"),
-  c("ADM0_NAME","ADM1_CODE","ADM2_CODE","village"),
-  
-  c("ADM0_NAME","ADM2_CODE","village")
+  c("iso_country_code"),
+  c("iso_country_code","gdlcode"),
+  c("iso_country_code","gdlcode","village")
+  # c("ADM0_NAME","ADM1_CODE","ADM2_CODE","village"),
+  # 
+  # c("ADM0_NAME","ADM2_CODE","village")
 )
 
 

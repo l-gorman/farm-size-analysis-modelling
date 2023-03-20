@@ -6,7 +6,7 @@ library(dplyr)
 library(tidyr)
 library(ggdist)
 library(flextable)
-
+library(tidybayes)
 loadRData <- function(fileName){
   #loads an RData file, and returns it
   load(fileName)
@@ -175,6 +175,20 @@ png(filename = "./outputs/vpc_plots/all_data/trace_plots.png")
 plot(model)
 dev.off()
 
+
+get_variables(model)
+
+png(filename = "./outputs/vpc_plots/all_data/mcmc_scatter.png",width = 1000,height = 500,units="px")
+# bayesplot::mcmc_scatter(model,
+#                         pars=c("sd_ADM0_NAME__Intercept",
+#                                "sd_ADM0_NAME:ADM2_CODE__Intercept"))
+
+print(bayesplot::mcmc_pairs(model,  regex_pars = "sd_|sigma",
+                      off_diag_args = list(size = 1, alpha = 0.5)))
+
+dev.off()
+
+
 dir.create("outputs/vpc_plots")
 
 
@@ -217,6 +231,11 @@ for (country_dir in all_countries){
   # Trace Plots
   png(filename = paste0("./outputs/vpc_plots/",country,"/trace_plots.png"))
   plot(model)
+  dev.off()
+  
+  png(filename = paste0("./outputs/vpc_plots/",country,"/mcmc_scatter.png"),width=1000,height=500,units="px")
+  print(bayesplot::mcmc_pairs(model,  regex_pars = "sd_|sigma",
+                        off_diag_args = list(size = 1, alpha = 0.5)))
   dev.off()
   
  

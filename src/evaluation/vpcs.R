@@ -8,6 +8,8 @@ loadRData <- function(fileName){
 # model <- loadRData("./outputs/brms_anova/multi_level_normal/adm_0_adm_2_village_anova.rda")
 model <- loadRData("./outputs/gaussian_location/gaussian_location/hfias_ADM0_NAME_ADM2_CODE_village.rda")
 model
+
+bayes_R2(model)
 posterior <- as.array(model)
 bayesplot::mcmc_intervals(posterior,
                           pars = c("b_Intercept", "sd_ADM0_NAME__Intercept","sd_ADM0_NAME:ADM2_CODE__Intercept","sd_ADM0_NAME:ADM2_CODE:village__Intercept","sigma"))

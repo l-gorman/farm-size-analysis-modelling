@@ -34,85 +34,14 @@ library(lme4) # General package for bayesian multi-level modelling.
 library(FactoMineR) # Package for pca
 library(factoextra) # Extra pca features
 
-# Reading Data ------------------------------------------------------------
-# RHoMIS Data
-# rhomis_data <- readr::read_csv("./data/prepared-data/rhomis-ee-gaez.csv")
-# rhomis_data <- rhomis_data[!is.na(rhomis_data$gps_lat) & !is.na(rhomis_data$gps_lon),]
-# rhomis_data <- st_as_sf(rhomis_data, coords = c("gps_lon", "gps_lat"), 
-#                         crs = 4326, agr = "constant", remove = F)
 
-indicator_data <- readr::read_csv("./data/prepped-data/rhomis-ee-gaez.csv")
+indicator_data <- readr::read_csv("./prepared-data/rhomis-gaez-gdl.csv")
 indicator_data <- indicator_data[!is.na(indicator_data$x_gps_latitude) & !is.na(indicator_data$x_gps_longitude),]
 indicator_data_geo <- st_as_sf(indicator_data, coords = c("x_gps_latitude", "x_gps_longitude"), 
                                crs = 4326, agr = "constant", remove = F)
 
 
 
-# FAO administrative data
-fao_level_2 <- geojson_sf('data/prepped-data/fao_level_2.geojson')
-fao_level_2 <- sf::st_as_sf(x = fao_level_2, wkt = "geometry")
-fao_level_2_geo <-st_set_crs(fao_level_2,'EPSG:4326')
-
-fao_level_2 <- tibble::as_tibble(fao_level_2)
-
-land_categories <-  readr::read_csv("./data/prepped-data/land_cover_classes.csv")
-
-# Data Cleaning -----------------------------------------------------------
-
-
-# Removing Null values
-
-#
-indicator_data <- indicator_data[!is.na(indicator_data$land_cultivated_ha),]
-indicator_data <- indicator_data[!is.na(indicator_data$AEZ_Classes_33),]
-
-land_cat_columns <- paste0("land_cat_",c(1:17))
-indicator_data[land_cat_columns] <- lapply(indicator_data[land_cat_columns] , function(column){
-  column[is.na(column)] <- 0
-  # Dividing the number of pixels by total pixel count for that area
-  column <- column/indicator_data$pixelCount
-  return(column)
-}) %>% dplyr::bind_cols()
-
-fao_level_2[land_cat_columns] <- lapply(fao_level_2[land_cat_columns] , function(column){
-  column <- as.numeric(column)
-  column[is.na(column)] <- 0
-  # Dividing the number of pixels by total pixel count for that area
-  column <- column/fao_level_2$pixelCount
-  return(column)
-}) %>% dplyr::bind_cols()
-
-
-new_land_cat_columns <- land_categories$Tag
-colnames(indicator_data)[colnames(indicator_data) %in% land_cat_columns] <- new_land_cat_columns
-colnames(fao_level_2)[colnames(fao_level_2) %in% land_cat_columns] <- new_land_cat_columns
-
-colnames(indicator_data)[colnames(indicator_data) == "accessibility_mean"] <-"healthcare_traveltime"
-colnames(indicator_data)[colnames(indicator_data) == "b1_mean_mean"] <- "nightlights"
-colnames(indicator_data)[colnames(indicator_data) == "population_density_mean_mean"] <- "population_density"
-
-colnames(indicator_data)[colnames(indicator_data) == "elevation_mean"] <- "elevation"
-colnames(indicator_data)[colnames(indicator_data) == "NDVI_mean_mean"] <- "ndvi"
-colnames(indicator_data)[colnames(indicator_data) == "constant_mean"] <- "topographic_diversity"
-
-colnames(fao_level_2)[colnames(fao_level_2) == "accessibility_mean"] <-"healthcare_traveltime"
-colnames(fao_level_2)[colnames(fao_level_2) == "b1_mean_mean"] <- "nightlights"
-colnames(fao_level_2)[colnames(fao_level_2) == "population_density_mean_mean"] <- "population_density"
-
-colnames(fao_level_2)[colnames(fao_level_2) == "elevation_mean"] <- "elevation"
-colnames(fao_level_2)[colnames(fao_level_2) == "NDVI_mean_mean"] <- "ndvi"
-colnames(fao_level_2)[colnames(fao_level_2) == "constant_mean"] <- "topographic_diversity"
-
-indicator_data$geo_id <- paste0(indicator_data$ADM0_CODE, "_", 
-                                indicator_data$ADM1_CODE, "_",
-                                indicator_data$ADM2_CODE)
-
-fao_level_2$geo_id <- paste0(fao_level_2$ADM0_CODE, "_", 
-                             fao_level_2$ADM1_CODE, "_",
-                             fao_level_2$ADM2_CODE)
-
-
-# Outlier Detection -------------------------------------------------------
 
 
 outlier_filter <- quantile(indicator_data[["land_cultivated_ha"]], probs = c(0.01,0.99))
@@ -124,6 +53,11 @@ table(indicator_data[c("land_cultivated_ha")]>outlier_filter[2]) # 201 with land
 indicator_data <- indicator_data[indicator_data[c("land_cultivated_ha")] != outlier_filter[1] & indicator_data[c("land_cultivated_ha")] <= outlier_filter[2],]
 
 
+# 
+
+indicator_data <- indicator_data[!is.na(indicator_data$hfias_status),]
+
+indicator_data <- indicator_data[!is.na(indicator_data$land_cultivated_ha),]
 
 
 indicator_data$hfias_numeric<- NA
@@ -139,30 +73,40 @@ indicator_data$hfias_numeric[indicator_data$hfias_status=="food_secure"] <- 4
 
 # Plotting Correlations --------------------------------------------------
 
-x <- c("healthcare_traveltime",
-       "nightlights",
-       "population_density",
+colnames(indicator_data)
+indicator_data$sgdi
+x <- c("travel_time_to_cities_9",
+       "travel_time_to_cities_8",
+       "travel_time_to_cities_7.2",
+       "travel_time_to_cities_7.1",
        
+       "shdi",
+       "healthindex",
+       "incindex",
+       "edindex",
+       "esch",
+       "msch",
+       "lifexp",
+       "gnic",
+       "lgnic",
        
-       "elevation",
-       "ndvi",
-       "topographic_diversity",
-       "adjusted_length_growing_period",
+       "adjusted_length_growing_period"
        
        
 
        
        
-       new_land_cat_columns
 )
+
 
 aez_33 <- grep("AEZ_Classes_33_", colnames(indicator_data), value=T)
 
 
 
 
-# y <-c("land_cultivated_ha")
-y <-c("hfias_numeric")
+y <-c("land_cultivated_ha")
+# y <-c("hfias_numeric")
+
 
 
 # Looking at subnational indicators vas land cultivated
@@ -183,28 +127,32 @@ land_cult_corr$var2 <- gsub("AEZ_Classes_33_", "",land_cult_corr$var2)
 land_cult_corr$var2 <- factor(land_cult_corr$var2, levels=c(x,gsub("AEZ_Classes_33_", "",aez_33)), ordered = T)
 land_cult_corr$factor_level <- as.numeric(land_cult_corr$var2)
 
-socio_economic <- c("healthcare_traveltime",
-                    "nightlights",
-                    "population_density")
+socio_economic <- c("shdi",
+                    "healthindex",
+                    "incindex",
+                    "edindex",
+                    "esch",
+                    "msch",
+                    "lifexp",
+                    "gnic",
+                    "lgnic",
+                    "travel_time_to_cities_9",
+                    "travel_time_to_cities_8",
+                    "travel_time_to_cities_7.2",
+                    "travel_time_to_cities_7.1")
 
-environmental <- c("elevation",
-                   "ndvi",
-                   "topographic_diversity",
-                   "adjusted_length_growing_period")
+environmental <- c("adjusted_length_growing_period")
 
 
 
-land_cat <- new_land_cat_columns
 
 land_cult_corr$var_group <- NA
 land_cult_corr$var_group[land_cult_corr$var2 %in% socio_economic] <- "Socio-Economic"
 land_cult_corr$var_group[land_cult_corr$var2 %in% environmental] <- "Environmental"
-land_cult_corr$var_group[land_cult_corr$var2 %in% land_cat] <- "Land-Cover-Class"
 land_cult_corr$var_group[land_cult_corr$var2 %in% gsub("AEZ_Classes_33_", "",aez_33)] <- "Agro-Eco-Zone"
 
 land_cult_corr$var_group <- factor(land_cult_corr$var_group, 
                                       levels=c("Agro-Eco-Zone",
-                                               "Land-Cover-Class",
                                                "Environmental",
                                                "Socio-Economic"),
                                       ordered=T, )
@@ -216,9 +164,8 @@ colors <- brewer.pal(length(unique(land_cult_corr$var_group)), name="Dark2")
 
 land_cult_corr <- land_cult_corr %>%
   mutate(., color = with(., case_when(
-    (var_group=="Socio-Economic") ~ colors[4],
-    (var_group=="Environmental")  ~ colors[3],
-    (var_group=="Land-Cover-Class")  ~ colors[2],
+    (var_group=="Socio-Economic") ~ colors[3],
+    (var_group=="Environmental")  ~ colors[2],
     (var_group=="Agro-Eco-Zone")  ~ colors[1]
   )))
 

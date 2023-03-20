@@ -13,8 +13,29 @@ library(performance)
 
 
 # country level only ------------------------------------------------------
+loadRData <- function(fileName){
+  #loads an RData file, and returns it
+  load(fileName)
+  get(ls()[ls() != "fileName"])
+}
 
-load("./outputs/brms_anova/multi_level_normal/adm0_anova.rda")
+
+temp <- loadRData("./outputs/continental_gaussian_location/continental_gaussian_location/per_country/BF/ADM2_CODE_village.rda")
+get_variables(temp)
+
+posterior <-  as.array(temp)
+
+bayesplot::mcmc_areas(posterior,
+                      pars = c("b_Intercept", "sd_ADM2_CODE__Intercept","sd_ADM2_CODE:village__Intercept","sigma"))
+bayesplot::mcmc_intervals(posterior,
+                          pars = c("b_Intercept", "sd_ADM2_CODE__Intercept","sd_ADM2_CODE:village__Intercept","sigma"))
+
+bayesplot::mcmc_scatter(temp,
+                        pars=c("sd_ADM2_CODE__Intercept",
+                               "sd_ADM2_CODE:village__Intercept"))
+
+
+load("./outputs/continental_gaussian_location/hfias_ADM0_NAME_ADM2_CODE_village.rda")
 plot(adm0_anova)
 summary(adm0_anova)
 get_variables(adm0_anova)
