@@ -52,7 +52,7 @@ run_model <- function(data,levels, quantile=NULL, sigma, iter, warmup,ncores ){
   
   
   levels_args <- paste0(levels,collapse="/")
-  temp_formula <- paste0("hfias_numeric ~ 1 + (1|",levels_args,")")
+  temp_formula <- paste0("log(land_cultivated_ha) ~ 1 + (1|",levels_args,")")
   
   
   if (sigma==F & is.null(quantile)){
@@ -114,7 +114,11 @@ indicator_data <- indicator_data[!is.na(indicator_data$land_cultivated_ha),]
 # indicator_data <- indicator_data[!is.na(indicator_data$hfias_status),]
 
 indicator_data <- indicator_data[!is.na(indicator_data$village),]
-# indicator_data <- indicator_data[indicator_data$land_cultivated_ha>0,]
+
+indicator_data <- indicator_data[indicator_data$land_cultivated_ha>0,]
+indicator_data <- indicator_data[indicator_data$land_cultivated_ha<100,]
+
+
 
 # indicator_data$fies_score
 # table(!is.na(indicator_data$hfias_status))
