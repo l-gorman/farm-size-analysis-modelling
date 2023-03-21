@@ -26,13 +26,13 @@ opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 # 
 # 
-opt <- list(
-  iter=20,
-  warmup=10,
-  data="./data/",
-  output="./outputs/continental_gaussian_location_test/",
-  ncores=4
-)
+# opt <- list(
+#   iter=20,
+#   warmup=10,
+#   data="./data/",
+#   output="./outputs/continental_gaussian_location_test/",
+#   ncores=4
+# )
 
 
 
