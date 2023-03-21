@@ -36,34 +36,34 @@ summary_table <- function(model){
   
   model_summary <- summary(model)
   pop_effects <- model_summary$fixed %>% as_tibble()
-  pop_effects$name <- "Population-Level Effects"
-  pop_effects$type <- "Intercept"
+  pop_effects$param_type <- "Population-Level Effects"
+  pop_effects$param <- "Intercept"
   pop_effects$level <- "" 
   
   pop_effects <- pop_effects %>% relocate(level)
-  pop_effects <- pop_effects %>% relocate(type)
-  pop_effects <- pop_effects %>% relocate(name)
+  pop_effects <- pop_effects %>% relocate(param)
+  pop_effects <- pop_effects %>% relocate(param_type)
   
   
   sigma <- model_summary$spec_pars %>% as_tibble()
-  sigma$name <- "Family Specific Parameters"
-  sigma$type <- "Sigma"
+  sigma$param_type <- "Family Specific Parameters"
+  sigma$param <- "Sigma"
   sigma$level <- ""
   
   sigma <- sigma %>% relocate(level)
-  sigma <- sigma %>% relocate(type)
-  sigma <- sigma %>% relocate(name)
+  sigma <- sigma %>% relocate(param)
+  sigma <- sigma %>% relocate(param_type)
   
   group_effects <- lapply(names(model_summary$random), function(x){
     temp <- as_tibble(model_summary$random[[x]])
     
-    temp$name <- "Group-Level Effects"
-    temp$type <- "sd(Intercept)" 
+    temp$param_type <- "Group-Level Effects"
+    temp$param <- "sd(Intercept)" 
     temp$level <- x
     
     temp <- temp %>% relocate(level)
-    temp <- temp %>% relocate(type)
-    temp <- temp %>% relocate(name)
+    temp <- temp %>% relocate(param)
+    temp <- temp %>% relocate(param_type)
     temp 
     
   }) %>% bind_rows()
@@ -81,7 +81,6 @@ plot_vpc <- function(model,
                      readable_params,
                      title,
                      subtitle
-                     
 ){
 
   data <- model$data
@@ -122,20 +121,69 @@ plot_vpc <- function(model,
   #     u95ci=quantile(value, probs=c(0.95))
   #   )
   
+    caption <- paste0("Points=estimates, Thick lines=stder, Thin lines=95% CIs\n",
+                      "N_hhs=",number_of_points,", N_villages=",number_of_villages,", N_subregions=",number_of_subnational_regions,"\n",
+                      "avg_hhs_per_village=",mean_people_per_village,", avg_villages_per_subregion=",mean_villages_per_county,"\n",
+                      "mean_farm_size=",mean_land_cultivated_ha,", sd_farm_size=",sd_land_cultivated_ha
+    )
+ 
   brm_anov_vpc %>% 
     gather() %>%
     ggplot(aes(y = key, x = value)) +
     stat_halfeye(aes(fill = after_stat(level))) +
     scale_fill_brewer(na.translate = FALSE) +
     labs(y="", x="VPC",title = title,
-         caption = paste0("Points=estimates, Thick lines=stder, Thin lines=95% CIs\n",
-         "N_hhs=",number_of_points,", N_villages=",number_of_villages,", N_subregions=",number_of_subnational_regions,"\n",
-        "avg_hhs_per_village=",mean_people_per_village,", avg_villages_per_subregion=",mean_villages_per_county,"\n",
-        "mean_farm_size=",mean_land_cultivated_ha,", sd_farm_size=",sd_land_cultivated_ha
-        ))+
+         caption = caption)+
     scale_y_discrete(name="VPC",
                      breaks=params,
                      labels=readable_params)
+  
+  
+  
+  
+}
+
+plot_multiple_vpcs <- function(country_vec,
+                               model_paths,
+                               params,
+                               param_of_interest,
+                               readable_params,
+                               title,
+                               subtitle){
+  
+  all_vpcs <- lapply(1:length(model_paths), function(i){
+    model <- loadRData(model_paths[i])
+    brm_anov_vpc <-vpc( 
+      model,
+      params)
+    brm_anov_vpc$country <- country_vec[i]
+    return(brm_anov_vpc)
+  }) %>% bind_rows()
+  
+  # result <- all_vpcs %>% 
+  #   pivot_longer(!country) %>%
+  #   ggplot(aes(y = name, x = value)) +
+  #   stat_pointinterval() +
+  #   scale_fill_brewer(na.translate = FALSE) +
+  #   labs(y="", x="VPC",title = "Variance Partition Coefficients for Individual Country Models")+
+  #   scale_y_discrete(
+  #                    breaks=params,
+  #                    labels=readable_params)+
+  #   facet_wrap(~country)
+  
+  result <- 
+   
+    ggplot(all_vpcs,aes(y = country, x = .data[[param_of_interest]])) +
+    stat_pointinterval() +
+    scale_fill_brewer(na.translate = FALSE) +
+    labs(y="County", x="VPC",title = title)
+    # scale_y_discrete(
+    #   breaks=params,
+    #   labels=readable_params)
+  
+  return(result)
+  
+
   
   
   
@@ -166,8 +214,10 @@ temp <- plot_vpc(model =model,
 dir.create("outputs/vpc_plots/gdl/all_data")
 ggsave( "outputs/vpc_plots/gdl/all_data/vpc_plot.png",temp)
 
-summary <- summary_table(model)
-ft <- flextable(summary)
+overall_summary <- summary_table(model)
+overall_summary <- overall_summary %>% 
+  add_column(country = rep("all_countries",nrow(overall_summary)), .before = "param_type")  
+ft <- flextable(overall_summary)
 ft <- autofit(ft)
 
 save_as_image(ft, path = "outputs/vpc_plots/gdl/all_data/table_fit_summary.png")
@@ -202,7 +252,8 @@ dev.off()
 all_countries <- list.dirs("./outputs/21_03_2023/per_country")
 all_countries <- all_countries[all_countries!="./outputs/21_03_2023/per_country"]
 
-
+list_of_plots <- list()
+ 
 for (country_dir in all_countries){
   
   country <- strsplit(country_dir, "/")
@@ -221,10 +272,22 @@ for (country_dir in all_countries){
                    readable_params = c("Between Subcounty", "Between Village", "Unexplained"),
                    title = paste0("VPCs for Land Cultivated Model ",country))
   ggsave(paste0("outputs/vpc_plots/gdl/",country,"/vpc_plot.png"),temp)
+  
+  
   temp <- NULL 
+  
+  caption <- 
+    
   
   # Summary Convergence Stats
   summary <- summary_table(model)
+  
+  summary <- summary %>% 
+    add_column(country = rep(country,nrow(summary)), .before = "param_type")  
+  
+  overall_summary <-bind_rows(overall_summary,summary)
+  
+  
   ft <- flextable(summary)
   ft <- autofit(ft)
   
@@ -246,4 +309,69 @@ for (country_dir in all_countries){
  
 }
 
+countries_all <- gsub('.*/ ?(\\w+)', '\\1', all_countries) 
+model_paths <- paste0("./outputs/21_03_2023/per_country/",countries_all,"/ADM2_CODE_village.rda")
+country_vec <- countries_all
 
+model_paths
+params =  c(
+  "sd_gdlcode__Intercept",
+  "sd_gdlcode:village__Intercept",
+  "sigma")
+
+county_vpcs <- plot_multiple_vpcs(country_vec,
+                                 model_paths,
+                                 params,
+                                 "sd_gdlcode__Intercept",
+                                 readable_params,
+                                 "VPCs for Between County Variance",
+                                 "")
+
+village <- plot_multiple_vpcs(country_vec,
+                                  model_paths,
+                                  params,
+                              "sd_gdlcode:village__Intercept",
+                                  readable_params,
+                                  "VPCs for Between Village Variance",
+                                  "")
+
+unexplained <- plot_multiple_vpcs(country_vec,
+                              model_paths,
+                              params,
+                              "sigma",
+                              readable_params,
+                              "VPCs for Unexplained Variance",
+                              "")
+  
+
+# Plotting Summary Estimates ----------------------------------------------
+
+
+plotting_data <- overall_summary %>% 
+  group_by(country) %>% 
+  filter(param!="Intercept") 
+plotting_data$variance_estimate <- plotting_data$Estimate^2
+plotting_data$min_variance_estimate <- plotting_data$`l-95% CI`^2
+plotting_data$max_variance_estimate <- plotting_data$Estimate^2
+
+plotting_data$country[plotting_data$country=="all_countries"] <- 'All'
+
+total_variance <- plotting_data %>% group_by(country) %>% 
+  summarise(total_variance = sum(Estimate^2))
+
+plotting_data <- plotting_data %>% merge(total_variance,by="country",all.x = T,all.y = F)
+plotting_data$vpc <- plotting_data$variance_estimate/plotting_data$total_variance
+
+plotting_data$vpc_level <- NA
+plotting_data$vpc_level[plotting_data$param=="Sigma"] <- "Unexplained"
+plotting_data$vpc_level[plotting_data$level%in%c("iso_country_code")] <- "Between Country"
+plotting_data$vpc_level[plotting_data$level%in%c("iso_country_code:gdlcode","gdlcode")] <- "Between Subcounty"
+plotting_data$vpc_level[plotting_data$level%in%c("iso_country_code:gdlcode:village","gdlcode:village")] <- "Between Villages"
+
+vpc_summary <- ggplot(plotting_data, aes(x=country, y=vpc, fill=vpc_level)) +
+  geom_bar(stat='identity', position = 'stack')+
+  labs(title = "Estimated Variance Partition Coefficients", x="Country", y="Proportion of Variance",fill='Source of Variation') +
+  theme(axis.text.x = element_text(face = c('bold', rep("plain", length(unique(plotting_data$country))-1))))
+ggsave(plot =vpc_summary,filename =  "./outputs/vpc_plots/gdl/model_comparison.png")
+
+readr::write_csv(overall_summary, "./outputs/vpc_plots/gdl/model_comparison.csv")
