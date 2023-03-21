@@ -4,7 +4,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=4
-#SBATCH --time=2-00:00:00
+#SBATCH --time=0-00:00:10
 #SBATCH --mem=36G
 #SBATCH --account=sscm012844
 
@@ -35,12 +35,12 @@ do
   esac
 done
 
-if [ -z "$out_directory" ]
+if [ -z "$script" ]
 then
   echo "Need to include script path"; 
   exit;
 else
-  out_directory="./src/modelling/${out_directory}"
+  script="./src/modelling/${script}"
 fi
 
 
@@ -89,7 +89,7 @@ echo "cores: $cores"
 
 
 
-Rscript $s -i $iterations -w $warmup -d $data_directory -o $out_directory -c $cores
+Rscript $script -i $iterations -w $warmup -d $data_directory -o $out_directory -c $cores
 
 unset iterations
 unset out_directory

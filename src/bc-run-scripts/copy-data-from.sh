@@ -13,3 +13,7 @@ scp -r lg14410@bc4login.acrc.bris.ac.uk:/user/work/lg14410/farm-size-analysis-mo
 scp -r lg14410@bc4login.acrc.bris.ac.uk:/user/work/lg14410/farm-size-analysis-modelling/outputs/continental_gaussian_location/ ./outputs/continental_gaussian_location
 
 scp -r lg14410@bc4login.acrc.bris.ac.uk:/user/work/lg14410/farm-size-analysis-modelling/outputs/continental_gaussian_location/per_country/ ./outputs/continental_gaussian_location/per_country/
+
+scp -r lg14410@bc4login.acrc.bris.ac.uk:/user/work/lg14410/farm-size-analysis-modelling/outputs/continental_gaussian_location/per_country/ ./outputs/continental_gaussian_location/per_country/
+
+scp -r lg14410@bc4login.acrc.bris.ac.uk:/user/work/lg14410/farm-size-analysis-modelling/outputs/continental_gaussian_location/ ./outputs/21_03_2023/
