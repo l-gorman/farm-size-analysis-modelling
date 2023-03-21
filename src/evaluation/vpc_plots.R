@@ -88,8 +88,8 @@ plot_vpc <- function(model,
   number_of_points <- nrow(data)
   
   
-  mean_hfias <- round(mean(data$hfias_numeric),2)
-  sd_hfias <- round(sd(data$hfias_numeric))
+  mean_land_cultivated_ha <- round(mean(data$land_cultivated_ha),2)
+  sd_land_cultivated_ha <- round(sd(data$land_cultivated_ha))
   
    
   
@@ -101,10 +101,10 @@ plot_vpc <- function(model,
     group_by(village) %>% summarise(number_of_people=n())
   mean_people_per_village <- round(mean(people_per_village$number_of_people),2)
   
-  number_of_subnational_regions <- length(unique(data$ADM2_CODE))
+  number_of_subnational_regions <- length(unique(data$gdlcode))
   villages_per_subnational_region <- data %>% 
-    group_by(ADM2_CODE, village) %>% summarise(number_of_people=n()) %>% ungroup() %>% 
-    group_by(ADM2_CODE) %>% summarise(number_of_villages=n())
+    group_by(gdlcode, village) %>% summarise(number_of_people=n()) %>% ungroup() %>% 
+    group_by(gdlcode) %>% summarise(number_of_villages=n())
   mean_villages_per_county <- round(mean(villages_per_subnational_region$number_of_villages),2)
   
 
@@ -131,8 +131,8 @@ plot_vpc <- function(model,
          caption = paste0("Points=estimates, Thick lines=stder, Thin lines=95% CIs\n",
          "N_hhs=",number_of_points,", N_villages=",number_of_villages,", N_subregions=",number_of_subnational_regions,"\n",
         "avg_hhs_per_village=",mean_people_per_village,", avg_villages_per_subregion=",mean_villages_per_county,"\n",
-        "mean_hfias=",mean_hfias,", sd_hfias=",sd_hfias,"\n",
-        "hfias scale 1-4"))+
+        "mean_farm_size=",mean_land_cultivated_ha,", sd_farm_size=",sd_land_cultivated_ha
+        ))+
     scale_y_discrete(name="VPC",
                      breaks=params,
                      labels=readable_params)
@@ -148,37 +148,42 @@ plot_vpc <- function(model,
 #   readable_params <- 
 #   levels <- "Level 1: Individual, Level 2: Village, Level 3: Subcounty, Level 4: Country"
 # title <- 
-  
-model <- loadRData( "./outputs/continental_gaussian_location/continental_gaussian_location/hfias_ADM0_NAME_ADM2_CODE_village.rda")
+dir.create("outputs/vpc_plots/")
+
+dir.create("outputs/vpc_plots/gdl")
+
+
+model <- loadRData( "./outputs/21_03_2023/iso_country_code_gdlcode_village.rda")
+get_variables(model)[1:10]
 temp <- plot_vpc(model =model,
-           params =  c( "sd_ADM0_NAME__Intercept",
-                        "sd_ADM0_NAME:ADM2_CODE__Intercept",
-                        "sd_ADM0_NAME:ADM2_CODE:village__Intercept",
+           params =  c( "sd_iso_country_code__Intercept",
+                        "sd_iso_country_code:gdlcode__Intercept",
+                        "sd_iso_country_code:gdlcode:village__Intercept",
                         "sigma"),
            readable_params = c("Between Country", "Between Subcounty", "Between Village", "Unexplained"),
            title = "VPCs for HFIAS All Data")
 
-dir.create("outputs/vpc_plots/all_data")
-ggsave( "outputs/vpc_plots/all_data/vpc_plot.png",temp)
+dir.create("outputs/vpc_plots/gdl/all_data")
+ggsave( "outputs/vpc_plots/gdl/all_data/vpc_plot.png",temp)
 
 summary <- summary_table(model)
 ft <- flextable(summary)
 ft <- autofit(ft)
 
-save_as_image(ft, path = "outputs/vpc_plots/all_data/table_fit_summary.png")
+save_as_image(ft, path = "outputs/vpc_plots/gdl/all_data/table_fit_summary.png")
 
 
 
 
 # Trace Plots
-png(filename = "./outputs/vpc_plots/all_data/trace_plots.png")
+png(filename = "./outputs/vpc_plots/gdl/all_data/trace_plots.png")
 plot(model)
 dev.off()
 
 
 get_variables(model)
 
-png(filename = "./outputs/vpc_plots/all_data/mcmc_scatter.png",width = 1000,height = 500,units="px")
+png(filename = "./outputs/vpc_plots/gdl/all_data/mcmc_scatter.png",width = 1000,height = 500,units="px")
 # bayesplot::mcmc_scatter(model,
 #                         pars=c("sd_ADM0_NAME__Intercept",
 #                                "sd_ADM0_NAME:ADM2_CODE__Intercept"))
@@ -189,14 +194,13 @@ print(bayesplot::mcmc_pairs(model,  regex_pars = "sd_|sigma",
 dev.off()
 
 
-dir.create("outputs/vpc_plots")
 
 
 
 
 
-all_countries <- list.dirs("./outputs/continental_gaussian_location/per_country")
-all_countries <- all_countries[all_countries!="./outputs/continental_gaussian_location/per_country"]
+all_countries <- list.dirs("./outputs/21_03_2023/per_country")
+all_countries <- all_countries[all_countries!="./outputs/21_03_2023/per_country"]
 
 
 for (country_dir in all_countries){
@@ -205,17 +209,18 @@ for (country_dir in all_countries){
   country <- lapply(country, function(x){
     x[length(x)]
   }) %>% unlist()
-  model <- loadRData(paste0("./outputs/continental_gaussian_location/per_country/",country,"/ADM2_CODE_village.rda"))
+  model <- loadRData(paste0("./outputs/21_03_2023/per_country/",country,"/ADM2_CODE_village.rda"))
   
-  dir.create(paste0("outputs/vpc_plots/",country))
+  dir.create(paste0("outputs/vpc_plots/gdl/",country))
   # Plot VPCs
   temp <- plot_vpc(model = model,
-                   params =  c("sd_ADM2_CODE__Intercept",
-                               "sd_ADM2_CODE:village__Intercept",
+                   params =  c(
+                                "sd_gdlcode__Intercept",
+                                "sd_gdlcode:village__Intercept",
                                "sigma"),
                    readable_params = c("Between Subcounty", "Between Village", "Unexplained"),
-                   title = paste0("VPCs for HFIAS Model ",country))
-  ggsave(paste0("outputs/vpc_plots/",country,"/vpc_plot.png"),temp)
+                   title = paste0("VPCs for Land Cultivated Model ",country))
+  ggsave(paste0("outputs/vpc_plots/gdl/",country,"/vpc_plot.png"),temp)
   temp <- NULL 
   
   # Summary Convergence Stats
@@ -223,17 +228,17 @@ for (country_dir in all_countries){
   ft <- flextable(summary)
   ft <- autofit(ft)
   
-  save_as_image(ft, path = paste0("outputs/vpc_plots/",country,"/table_fit_summary.png"))
+  save_as_image(ft, path = paste0("outputs/vpc_plots/gdl/",country,"/table_fit_summary.png"))
   
   
 
   
   # Trace Plots
-  png(filename = paste0("./outputs/vpc_plots/",country,"/trace_plots.png"))
+  png(filename = paste0("./outputs/vpc_plots/gdl/",country,"/trace_plots.png"))
   plot(model)
   dev.off()
   
-  png(filename = paste0("./outputs/vpc_plots/",country,"/mcmc_scatter.png"),width=1000,height=500,units="px")
+  png(filename = paste0("./outputs/vpc_plots/gdl/",country,"/mcmc_scatter.png"),width=1000,height=500,units="px")
   print(bayesplot::mcmc_pairs(model,  regex_pars = "sd_|sigma",
                         off_diag_args = list(size = 1, alpha = 0.5)))
   dev.off()
