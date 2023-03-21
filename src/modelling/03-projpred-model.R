@@ -1,4 +1,4 @@
-# sbatch src/bc-run-scripts/run_brms_model.sh  -s 03-projpred-model.R -i 2000 -w 1000 -n 4 -o brms_anova_21_03_2023
+# sbatch src/bc-run-scripts/run_brms_model.sh  -s 03-projpred-model.R -i 4000 -w 2000 -n 4 -o brms_anova_21_03_2023
 
 library(projpred)
 library(brms)
