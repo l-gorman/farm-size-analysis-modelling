@@ -149,7 +149,10 @@ plot_multiple_vpcs <- function(country_vec,
                                param_of_interest,
                                readable_params,
                                title,
-                               subtitle){
+                               subtitle,
+                               facet_wrap=F){
+  
+  
   
   all_vpcs <- lapply(1:length(model_paths), function(i){
     model <- loadRData(model_paths[i])
@@ -160,16 +163,19 @@ plot_multiple_vpcs <- function(country_vec,
     return(brm_anov_vpc)
   }) %>% bind_rows()
   
-  # result <- all_vpcs %>% 
-  #   pivot_longer(!country) %>%
-  #   ggplot(aes(y = name, x = value)) +
-  #   stat_pointinterval() +
-  #   scale_fill_brewer(na.translate = FALSE) +
-  #   labs(y="", x="VPC",title = "Variance Partition Coefficients for Individual Country Models")+
-  #   scale_y_discrete(
-  #                    breaks=params,
-  #                    labels=readable_params)+
-  #   facet_wrap(~country)
+  if (facet_wrap==T){
+  result <- all_vpcs %>%
+    pivot_longer(!country) %>%
+    ggplot(aes(y = name, x = value)) +
+    stat_pointinterval() +
+    scale_fill_brewer(na.translate = FALSE) +
+    labs(y="", x="VPC",title = "Variance Partition Coefficients for Individual Country Models")+
+    scale_y_discrete(
+                     breaks=params,
+                     labels=readable_params)+
+    facet_wrap(~country)
+  return(result)
+  }else{
   
   result <- 
    
@@ -180,6 +186,7 @@ plot_multiple_vpcs <- function(country_vec,
     # scale_y_discrete(
     #   breaks=params,
     #   labels=readable_params)
+  }
   
   return(result)
   
@@ -309,6 +316,8 @@ for (country_dir in all_countries){
  
 }
 
+dir.create("./outputs/vpc_plots/gdl/summary")
+
 countries_all <- gsub('.*/ ?(\\w+)', '\\1', all_countries) 
 model_paths <- paste0("./outputs/21_03_2023/per_country/",countries_all,"/ADM2_CODE_village.rda")
 country_vec <- countries_all
@@ -325,7 +334,9 @@ county_vpcs <- plot_multiple_vpcs(country_vec,
                                  "sd_gdlcode__Intercept",
                                  readable_params,
                                  "VPCs for Between County Variance",
-                                 "")
+                                 "",
+                                 facet_wrap=F)
+ggsave("./outputs/vpc_plots/gdl/summary/county_vpc_comparisons.png",county_vpcs)
 
 village <- plot_multiple_vpcs(country_vec,
                                   model_paths,
@@ -333,7 +344,10 @@ village <- plot_multiple_vpcs(country_vec,
                               "sd_gdlcode:village__Intercept",
                                   readable_params,
                                   "VPCs for Between Village Variance",
-                                  "")
+                                  "",
+                              facet_wrap=F)
+ggsave("./outputs/vpc_plots/gdl/summary/village_vpc_comparisons.png",village)
+
 
 unexplained <- plot_multiple_vpcs(country_vec,
                               model_paths,
@@ -341,7 +355,20 @@ unexplained <- plot_multiple_vpcs(country_vec,
                               "sigma",
                               readable_params,
                               "VPCs for Unexplained Variance",
-                              "")
+                              "",
+                              facet_wrap=F)
+ggsave("./outputs/vpc_plots/gdl/summary/unexplained_vpc_comparisons.png",unexplained)
+
+facet_vpcs <- plot_multiple_vpcs(country_vec,
+                                  model_paths,
+                                  params,
+                                  "sigma",
+                                  readable_params,
+                                  "VPCs for Per Country",
+                                  "",
+                                  facet_wrap=T)
+ggsave("./outputs/vpc_plots/gdl/summary/vpc_comparisons_facet.png",facet_vpcs,width = 4000,height = 2000,units = "px")
+
   
 
 # Plotting Summary Estimates ----------------------------------------------
@@ -372,6 +399,42 @@ vpc_summary <- ggplot(plotting_data, aes(x=country, y=vpc, fill=vpc_level)) +
   geom_bar(stat='identity', position = 'stack')+
   labs(title = "Estimated Variance Partition Coefficients", x="Country", y="Proportion of Variance",fill='Source of Variation') +
   theme(axis.text.x = element_text(face = c('bold', rep("plain", length(unique(plotting_data$country))-1))))
-ggsave(plot =vpc_summary,filename =  "./outputs/vpc_plots/gdl/model_comparison.png")
+ggsave(plot =vpc_summary,filename =  "./outputs/vpc_plots/gdl/summary/vpc_summary_stacked.png")
 
-readr::write_csv(overall_summary, "./outputs/vpc_plots/gdl/model_comparison.csv")
+readr::write_csv(overall_summary, "./outputs/vpc_plots/gdl/summary/model_comparison_table_full.csv")
+
+
+
+plotting_data$vpc_level[plotting_data$param=="Sigma"] <- "Unexplained"
+plotting_data$vpc_level[plotting_data$level%in%c("iso_country_code")] <- "Between Country"
+plotting_data$vpc_level[plotting_data$level%in%c("iso_country_code:gdlcode","gdlcode")] <- "Between Subcounty"
+plotting_data$vpc_level[plotting_data$level%in%c("iso_country_code:gdlcode:village","gdlcode:village")] <- "Between Villages"
+
+short_summary <- overall_summary
+short_summary$param_clean <- NA
+short_summary$param_clean[short_summary$param=="Intercept"] <- "Intercept"
+
+short_summary$param_clean[short_summary$param=="Sigma"] <- "Unexplained"
+short_summary$param_clean[short_summary$level%in%c("iso_country_code")] <- "Between Country"
+short_summary$param_clean[short_summary$level%in%c("iso_country_code:gdlcode","gdlcode")] <- "Between Subcounty"
+short_summary$param_clean[short_summary$level%in%c("iso_country_code:gdlcode:village","gdlcode:village")] <- "Between Villages"
+
+short_summary$estimate_string <- paste0(
+  overall_summary$Estimate," (err: ",overall_summary$Est.Error,", l95 CI: ",overall_summary$`l-95% CI`,", u95 CI: ",overall_summary$`u-95% CI`,")")
+
+
+short_summary <- tibble::as_tibble(list(
+  Model = short_summary$country,
+  param = short_summary$param_clean,
+  estimates = short_summary$estimate_string
+  ))
+
+short_summary <- short_summary %>% pivot_wider(id_cols = "Model",names_from="param", values_from = "estimates")
+short_summary <- short_summary[c("Model",
+                                 "Intercept",
+                                 "Between Villages",
+                                 "Between Subcounty",
+                                 "Unexplained",
+                                 "Between Country")]
+
+readr::write_csv(short_summary, "./outputs/vpc_plots/gdl/summary/model_comparison_table_clean.csv")

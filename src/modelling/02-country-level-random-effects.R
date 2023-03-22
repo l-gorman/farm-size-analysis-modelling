@@ -1,4 +1,4 @@
-# sbatch src/bc-run-scripts/run_brms_anova_location_per_country.sh  -i 4000 -w 2000 -n 4 -o brms_anova_21_03_2023
+# sbatch src/bc-run-scripts/run_brms_anova_location_per_country.sh  -i 5000 -w 2000 -n 4 -o brms_anova_21_03_2023
 library(brms)
 library(ggplot2)
 library(ggridges)
@@ -98,7 +98,7 @@ run_model <- function(data,levels, quantile=NULL, sigma, iter, warmup,ncores ){
     cores = ncores,
     warmup = warmup,
     iter=iter,
-    control = list(adapt_delta = 0.9)
+    control = list(adapt_delta = 0.95)
   )
   
   return(result)
