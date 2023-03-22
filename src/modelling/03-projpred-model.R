@@ -1,4 +1,4 @@
-# sbatch src/bc-run-scripts/run_brms_model.sh  -s "03-projpred-model.R" -i 10000 -w 4000 -n 4 -o brms_anova_21_03_2023
+# sbatch src/bc-run-scripts/run_brms_model.sh  -s "03-projpred-model.R" -i 5000 -w 2000 -n 4 -o brms_anova_21_03_2023
 
 library(projpred)
 library(brms)
@@ -124,9 +124,8 @@ ref_model <- brm(
   family = gaussian(),
   iter=opt$iter, 
   warmup=opt$warmup,
-  cores=opt$ncores,
-  control=list(adapt_delta=0.9, 
-               max_treedepth=13)
+  cores=opt$ncores
+  # control=list(adapt_delta=0.9)
 )
 
 save(ref_model,file=paste0(opt$output,"/proj_pred/proj_pred_ref_model.rda"))
