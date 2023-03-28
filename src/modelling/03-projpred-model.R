@@ -9,7 +9,6 @@ library(tidyr)
 library(ggdist)
 library(magrittr)
 library(optparse)
-library(rhomis)
 
 option_list = list(
   make_option(c("-i", "--iter"),  type='integer',
@@ -115,10 +114,15 @@ education_conversions <- tribble(
 table(is.na(indicator_data$head_education_level))
 
 
-education_conversions <- rhomis::make_per_project_conversion_tibble(indicator_data$id_rhomis_dataset,unit_conv_tibble = education_conversions)
-new_education_level <- rhomis::switch_units(indicator_data$head_education_level,education_conversions,id_vector = indicator_data$id_rhomis_dataset)
 
-indicator_data$education <- new_education_level
+new_education_level <- indicator_data["head_education_level"]
+new_education_level$index <- c(1:nrow(new_education_level))
+
+new_education_level <- new_education_level %>% merge(education_conversions, by.x="head_education_level", by.y = "survey_value", all.x = T, all.y=F)
+new_education_level <- new_education_level[order(new_education_level$index),]
+row.names(new_education_level) <- new_education_level$index
+
+indicator_data$education <- new_education_level$conversion
 indicator_data <- indicator_data[!is.na(indicator_data$education),]
 
 x_vars <- c(
