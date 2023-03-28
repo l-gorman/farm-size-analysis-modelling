@@ -1,4 +1,4 @@
-# sbatch src/bc-run-scripts/run_brms_model.sh  -s "03-projpred-model.R" -i 5000 -w 2000 -n 4 -o brms_anova_21_03_2023
+# sbatch src/bc-run-scripts/run_brms_model.sh  -s "03-projpred-model.R" -i 15000 -w 7500 -n 4 -o brms_anova_21_03_2023
 
 library(projpred)
 library(brms)
@@ -125,17 +125,31 @@ row.names(new_education_level) <- new_education_level$index
 indicator_data$education <- new_education_level$conversion
 indicator_data <- indicator_data[!is.na(indicator_data$education),]
 
+normalise <- function(vector){
+  
+}
+
+indicator_data$log_hh_size <- log(indicator_data$hh_size_mae)
+
+indicator_data$log_min_travel_time <- indicator_data$min_travel_time 
+
+indicator_data <- indicator_data[!is.na(indicator_data$log_hh_size),]
+indicator_data <- indicator_data[!is.infinite(indicator_data$log_hh_size),]
+
+indicator_data <- indicator_data[!is.na(indicator_data$log_min_travel_time),]
+indicator_data <- indicator_data[!is.infinite(indicator_data$log_min_travel_time),]
+
 x_vars <- c(
   #Household Level,
   "education",
-  "hh_size_mae",
+  "log_hh_size",
   # "household_type",
  
   
   # Village Level
   "adjusted_length_growing_period",
   "aez_col",
-  "min_travel_time",
+  "log_min_travel_time",
   
   #Subcounty Level
   "gdl_shdi",
@@ -146,6 +160,9 @@ x_vars <- c(
 levels <- c("iso_country_code",
             "gdlcode",
             "village")
+
+
+
 
 colSums(is.na(indicator_data[x_vars]))
 
@@ -170,21 +187,21 @@ ref_model <- brm(
 
 save(ref_model,file=paste0(opt$output,"/proj_pred/proj_pred_ref_model.rda"))
 
-land_cultivated_varsel <- cv_varsel(get_refmodel(ref_model),
-                                    method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 1)
-save(ref_model,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_1.rda"))
-
-land_cultivated_varsel <- cv_varsel(get_refmodel(ref_model),
-                                    method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 2)
-save(ref_model,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_2.rda"))
-
-land_cultivated_varsel <- cv_varsel(get_refmodel(ref_model),
-                                    method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 3)
-save(ref_model,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_3.rda"))
-
-land_cultivated_varsel <- cv_varsel(get_refmodel(ref_model),
-                                    method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 4)
-save(ref_model,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_4.rda"))
+# land_cultivated_varsel <- cv_varsel(get_refmodel(ref_model),
+#                                     method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 1)
+# save(ref_model,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_1.rda"))
+# 
+# land_cultivated_varsel <- cv_varsel(get_refmodel(ref_model),
+#                                     method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 2)
+# save(ref_model,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_2.rda"))
+# 
+# land_cultivated_varsel <- cv_varsel(get_refmodel(ref_model),
+#                                     method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 3)
+# save(ref_model,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_3.rda"))
+# 
+# land_cultivated_varsel <- cv_varsel(get_refmodel(ref_model),
+#                                     method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 4)
+# save(ref_model,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_4.rda"))
 
 
 
