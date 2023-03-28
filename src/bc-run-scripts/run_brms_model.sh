@@ -22,7 +22,6 @@ echo "Cancel your job by entering scancel ${SLURM_JOBID}  \n"
 echo "More details on submitting jobs here https://www.acrc.bris.ac.uk/protected/hpc-docs/job_types/ \n"
 
 module add languages/r/4.1.0
-module add libs/openssl/1.1.1k
 
 while getopts s:i:w:o:d:c: flag
 do
