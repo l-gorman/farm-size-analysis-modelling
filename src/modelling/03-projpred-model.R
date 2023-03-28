@@ -65,42 +65,77 @@ indicator_data <- indicator_data[!is.na(indicator_data$village),]
 # quantile(indicator_data$value_farm_products_consumed_ppp_per_hh_per_year, probs=c(0.1,0.25,0.5,0.75,0.9), na.rm = T)
 # quantile(indicator_data$c, probs=c(0.1,0.25,0.5,0.75,0.9), na.rm = T)
 
+
+aez_cols <- grep("AEZ", colnames(indicator_data),value=T)
+aez_cols <- aez_cols[aez_cols!="AEZ_Classes_33"]
+
+indicator_data$aez_col <- colnames(indicator_data[aez_cols])[max.col(indicator_data[aez_cols])]
+indicator_data$aez_col <- gsub("AEZ_Classes_33_","AEZ_Class_",indicator_data$aez_col)
+indicator_data$aez_col <- as.factor(indicator_data$aez_col)
+
+travel_time_cols <- grep("travel_time", colnames(indicator_data), value=T)
+min_travel_time <-  apply( indicator_data[travel_time_cols], 1, min)
+indicator_data$min_travel_time <- min_travel_time
+
+table(indicator_data$head_education_level)
+table(is.na(indicator_data$head_education_level))
+
+education_conversions <- tribble(
+  ~survey_value, ~conversion,
+  "postsecondary","postsecondary",
+  "college",   "postsecondary",
+  
+  "illiterate",   "no_school",
+  "no_school",   "no_school",
+  "none", "no_school",
+  
+  "enrolled_not_completed",   "enrolled_not_completed",
+  
+  "no_answer", NA,
+  
+  
+  "primary","primary",
+  "primary_1","primary",
+  "primary_2","primary",
+  
+  "religious_school","religious_school",
+  "islamic_school","religious_school",
+  "koranic_school", "religious_school",
+  
+  "secondary","secondary",
+  "secondary_1","secondary",
+  "secondary_2","secondary",
+  
+  "literate","literate",
+  "technical", "vocational",
+  "vocational", "vocational",
+  "adult_education",   "adult_education",
+)
+table(is.na(indicator_data$head_education_level))
+
+
+education_conversions <- rhomis::make_per_project_conversion_tibble(indicator_data$id_rhomis_dataset,unit_conv_tibble = education_conversions)
+new_education_level <- rhomis::switch_units(indicator_data$head_education_level,education_conversions,id_vector = indicator_data$id_rhomis_dataset)
+
+indicator_data$education <- new_education_level
+indicator_data <- indicator_data[!is.na(indicator_data$education),]
+
 x_vars <- c(
   #Household Level,
-  # "livestock_tlu",
-  # "hh_size_mae",
+  "education",
+  "hh_size_mae",
+  # "household_type",
+ 
   
   # Village Level
   "adjusted_length_growing_period",
-  "AEZ_Classes_33_cold_no_permafrost_moist",                
-  "AEZ_Classes_33_cold_no_permafrost_wet",                  
-  "AEZ_Classes_33_desert_or_arid_climate",                  
-  "AEZ_Classes_33_dominantly_built_up_land",                
-  "AEZ_Classes_33_dominantly_hydromorphic_soils",           
-  "AEZ_Classes_33_dominantly_very_steep_terrain",           
-  "AEZ_Classes_33_dominantly_water",                        
-  "AEZ_Classes_33_land_with_ample_irrigated_soils",         
-  "AEZ_Classes_33_land_with_severe_soil_or_terrain_limitations",
-  "AEZ_Classes_33_sub_tropics_cool_semi_arid",               
-  "AEZ_Classes_33_sub_tropics_moderately_cool_semi_arid",    
-  "AEZ_Classes_33_sub_tropics_moderately_cool_sub_humid",    
-  "AEZ_Classes_33_sub_tropics_warm_humid",                   
-  "AEZ_Classes_33_sub_tropics_warm_semi_arid",               
-  "AEZ_Classes_33_temperate_cool_wet",                       
-  "AEZ_Classes_33_tropics_highland_humid",                   
-  "AEZ_Classes_33_tropics_highland_semi_arid",               
-  "AEZ_Classes_33_tropics_highland_sub_humid",               
-  "AEZ_Classes_33_tropics_lowland_humid",                    
-  "AEZ_Classes_33_tropics_lowland_semi_arid",                
-  "AEZ_Classes_33_tropics_lowland_sub_humid",
+  "aez_col",
+  "min_travel_time",
   
   #Subcounty Level
-  "gdl_healthindex",
-  "gdl_sgdi",
   "gdl_shdi",
   "gdl_lifexp"
 )
-
 
 
 levels <- c("iso_country_code",
