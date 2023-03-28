@@ -9,6 +9,7 @@ library(tidyr)
 library(ggdist)
 library(magrittr)
 library(optparse)
+library(rhomis)
 
 option_list = list(
   make_option(c("-i", "--iter"),  type='integer',
