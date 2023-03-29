@@ -27,10 +27,7 @@ while getopts s:i:w:o:d:c: flag
 do
   case "$flag" in 
     s) script=${OPTARG};;
-    i) iterations=${OPTARG};;
-    w) warmup=${OPTARG};;
     o) out_directory=${OPTARG};;
-    d) data_directory=${OPTARG};;
     c) cores=${OPTARG};;
   esac
 done
@@ -49,13 +46,6 @@ then
   out_directory="/user/work/lg14410/farm-size-analysis-modelling/outputs/"
 else
   out_directory="/user/work/lg14410/farm-size-analysis-modelling/outputs/${out_directory}"
-fi
-
-if [ -z "$data_directory" ]
-then
-  data_directory="/user/work/lg14410/farm-size-analysis-modelling/data/"
-else
-  data_directory="/user/work/lg14410/farm-size-analysis-modelling/data/${data_directory}"
 fi
 
 if [ -z "$iterations" ]
@@ -89,7 +79,7 @@ echo "cores: $cores"
 
 
 
-Rscript $script -i $iterations -w $warmup -d $data_directory -o $out_directory -c $cores
+Rscript $script -o $out_directory -c $cores
 
 unset iterations
 unset out_directory

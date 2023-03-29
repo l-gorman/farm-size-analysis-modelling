@@ -1,6 +1,6 @@
-# sbatch src/bc-run-scripts/run_brms_model.sh  -s "03-projpred-model.R" -i 15000 -w 7500 -n 4 -o brms_anova_21_03_2023
+# sbatch src/bc-run-scripts/run_projpred_ref_model.sh  -s "03-projpred-ref-model.R" -i 15000 -w 7500 -n 4 -o brms_anova_21_03_2023
 
-library(projpred)
+
 library(brms)
 library(ggplot2)
 library(ggridges)
