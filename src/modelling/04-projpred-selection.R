@@ -9,6 +9,7 @@ library(tidyr)
 library(ggdist)
 library(magrittr)
 library(optparse)
+library(projpred)
 
 option_list = list(
   make_option(c("-o", "--output"), type='character',
