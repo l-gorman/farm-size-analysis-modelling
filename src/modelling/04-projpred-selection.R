@@ -11,6 +11,10 @@ library(magrittr)
 library(optparse)
 library(projpred)
 
+# Solution to globals size, found here:
+# https://github.com/satijalab/seurat/issues/1845
+options(future.globals.maxSize = 8000 * 1024^2)
+
 option_list = list(
   make_option(c("-o", "--output"), type='character',
               help="The directory where results will be written"),
