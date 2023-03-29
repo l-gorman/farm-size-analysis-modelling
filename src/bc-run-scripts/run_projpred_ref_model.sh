@@ -3,7 +3,7 @@
 #SBATCH --job-name=farm-size-modelling
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=4
+#SBATCH --cpus-per-task=5
 #SBATCH --time=3-00:00:00
 #SBATCH --mem=36G
 #SBATCH --account=sscm012844

@@ -1,4 +1,4 @@
-# sbatch src/bc-run-scripts/run_projpred_ref_model.sh  -s "04-projpred-selection.R" -n 4 -o brms_anova_21_03_2023
+# sbatch src/bc-run-scripts/run_projpred_ref_model.sh  -s "04-projpred-selection.R" -n 5 -o brms_anova_21_03_2023
 
 
 library(brms)
@@ -12,8 +12,13 @@ library(optparse)
 library(projpred)
 
 # Solution to globals size, found here:
-# https://github.com/satijalab/seurat/issues/1845
+# https://stackoverflow.com/questions/40536067/how-to-adjust-future-global-maxsize
 options(future.globals.maxSize = 8000 * 1024^2)
+
+### Only for technical reasons in this vignette (you can omit this when running
+### the code yourself):
+###
+
 
 option_list = list(
   make_option(c("-o", "--output"), type='character',
@@ -37,6 +42,9 @@ writeLines("test_file_output",paste0(opt$output,"/test_file.txt"))
 
 opt$data <- gsub("/$", "", opt$data)
 opt$output <- gsub("/$", "", opt$output)
+
+options(mc.cores = opt$ncores)
+
 
 dir.create(opt$output)
 
