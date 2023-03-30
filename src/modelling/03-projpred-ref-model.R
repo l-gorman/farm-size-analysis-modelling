@@ -13,6 +13,9 @@ library(fastDummies)
 library(projpred)
 library(cmdstanr)
 
+options(mc.cores = 28, brms.backend = "cmdstanr") # allows threading
+
+
 option_list = list(
   make_option(c("-i", "--iter"),  type='integer',
               help="Iterations"),
@@ -203,9 +206,10 @@ ref_model <- brm(
   family = gaussian(),
   iter=opt$iter, 
   warmup=opt$warmup,
-  cores=opt$ncores,
-  backend = "cmdstanr"
-  # cores=4,
+  # cores=opt$ncores,
+  backend = "cmdstanr",
+  cores=4,
+  threads = threading(7)
   # control=list(adapt_delta=0.9)
 )
 
