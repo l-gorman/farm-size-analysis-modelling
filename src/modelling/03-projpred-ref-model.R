@@ -10,7 +10,7 @@ library(ggdist)
 library(magrittr)
 library(optparse)
 library(fastDummies)
-
+library(projpred)
 
 option_list = list(
   make_option(c("-i", "--iter"),  type='integer',
@@ -208,19 +208,21 @@ ref_model <- brm(
 
 save(ref_model,file=paste0(opt$output,"/proj_pred/proj_pred_ref_model.rda"))
 
-land_cultivated_varsel <- cv_varsel(get_refmodel(ref_model),
+ref_model <-get_refmodel(ref_model)
+
+land_cultivated_varsel <- cv_varsel(ref_model,
                                     method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 1)
 save(land_cultivated_varsel,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_1.rda"))
 
-land_cultivated_varsel <- cv_varsel(get_refmodel(ref_model),
+land_cultivated_varsel <- cv_varsel(ref_model,
                                     method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 2)
 save(land_cultivated_varsel,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_2.rda"))
 
-land_cultivated_varsel <- cv_varsel(get_refmodel(ref_model),
+land_cultivated_varsel <- cv_varsel(ref_model,
                                     method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 3)
 save(land_cultivated_varsel,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_3.rda"))
 
-land_cultivated_varsel <- cv_varsel(get_refmodel(ref_model),
+land_cultivated_varsel <- cv_varsel(ref_model,
                                     method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 4)
 save(land_cultivated_varsel,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_4.rda"))
 
