@@ -1,5 +1,4 @@
-# sbatch src/bc-run-scripts/run_projpred_ref_model.sh  -s "03-projpred-ref-model.R" -i 8000 -w 4000 -n 4 -o brms_anova_21_03_2023
-
+# acct
 
 library(brms)
 library(ggplot2)
@@ -31,13 +30,13 @@ opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 # 
 
-opt <- list(
-  iter=20,
-  warmup=10,
-  data="./data/",
-  output="./outputs/projpred_test/",
-  ncores=4
-)
+# opt <- list(
+#   iter=20,
+#   warmup=10,
+#   data="./data/",
+#   output="./outputs/projpred_test/",
+#   ncores=4
+# )
 
 opt$data <- gsub("/$", "", opt$data)
 opt$output <- gsub("/$", "", opt$output)
