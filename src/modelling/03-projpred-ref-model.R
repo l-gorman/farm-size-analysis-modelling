@@ -34,13 +34,13 @@ opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 # 
 
-opt <- list(
-  iter=20,
-  warmup=10,
-  data="./data/",
-  output="./outputs/projpred_test/",
-  ncores=4
-)
+# opt <- list(
+#   iter=20,
+#   warmup=10,
+#   data="./data/",
+#   output="./outputs/projpred_test/",
+#   ncores=4
+# )
 
 opt$data <- gsub("/$", "", opt$data)
 opt$output <- gsub("/$", "", opt$output)
