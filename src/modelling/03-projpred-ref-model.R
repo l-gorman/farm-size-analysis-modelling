@@ -1,4 +1,4 @@
-# sbatch src/bc-run-scripts/run_projpred_ref_model.sh  -s "03-projpred-ref-model.R" -i 10000 -w 5000 -n 4 -o brms_anova_21_03_2023
+# sbatch src/bc-run-scripts/run_projpred_ref_model.sh  -s "03-projpred-ref-model.R" -i 8000 -w 4000 -n 4 -o brms_anova_21_03_2023
 
 
 library(brms)
@@ -11,6 +11,7 @@ library(magrittr)
 library(optparse)
 library(fastDummies)
 library(projpred)
+library(cmdstanr)
 
 option_list = list(
   make_option(c("-i", "--iter"),  type='integer',
@@ -203,17 +204,18 @@ ref_model <- brm(
   iter=opt$iter, 
   warmup=opt$warmup,
   cores=opt$ncores,
+  backend = "cmdstanr"
   # cores=4,
   # control=list(adapt_delta=0.9)
 )
 
 save(ref_model,file=paste0(opt$output,"/proj_pred/proj_pred_ref_model.rda"))
 
-ref_model <-get_refmodel(ref_model)
-
-land_cultivated_varsel <- cv_varsel(ref_model,
-                                    method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 1)
-save(land_cultivated_varsel,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_1.rda"))
+# ref_model <-get_refmodel(ref_model)
+# 
+# land_cultivated_varsel <- cv_varsel(ref_model,
+#                                     method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 1)
+# save(land_cultivated_varsel,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_1.rda"))
 
 # land_cultivated_varsel <- cv_varsel(ref_model,
 #                                     method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 2)
