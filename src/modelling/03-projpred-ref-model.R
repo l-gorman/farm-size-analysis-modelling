@@ -202,7 +202,10 @@ ref_model <- brm(
   family = gaussian(),
   iter=opt$iter, 
   warmup=opt$warmup,
-  cores=opt$ncores
+  # cores=opt$ncores,
+  cores=4,
+  backend = "cmdstanr",
+  threads = threading(7),
   # control=list(adapt_delta=0.9)
 )
 
