@@ -202,10 +202,8 @@ ref_model <- brm(
   family = gaussian(),
   iter=opt$iter, 
   warmup=opt$warmup,
-  # cores=opt$ncores,
-  cores=4,
-  backend = "cmdstanr",
-  threads = threading(7),
+  cores=opt$ncores,
+  # cores=4,
   # control=list(adapt_delta=0.9)
 )
 
@@ -217,17 +215,17 @@ land_cultivated_varsel <- cv_varsel(ref_model,
                                     method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 1)
 save(land_cultivated_varsel,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_1.rda"))
 
-land_cultivated_varsel <- cv_varsel(ref_model,
-                                    method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 2)
-save(land_cultivated_varsel,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_2.rda"))
-
-land_cultivated_varsel <- cv_varsel(ref_model,
-                                    method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 3)
-save(land_cultivated_varsel,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_3.rda"))
-
-land_cultivated_varsel <- cv_varsel(ref_model,
-                                    method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 4)
-save(land_cultivated_varsel,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_4.rda"))
+# land_cultivated_varsel <- cv_varsel(ref_model,
+#                                     method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 2)
+# save(land_cultivated_varsel,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_2.rda"))
+# 
+# land_cultivated_varsel <- cv_varsel(ref_model,
+#                                     method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 3)
+# save(land_cultivated_varsel,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_3.rda"))
+# 
+# land_cultivated_varsel <- cv_varsel(ref_model,
+#                                     method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 4)
+# save(land_cultivated_varsel,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_4.rda"))
 
 
 
