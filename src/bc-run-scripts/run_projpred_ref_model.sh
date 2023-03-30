@@ -40,6 +40,13 @@ else
   script="./src/modelling/${script}"
 fi
 
+if [ -z "$data_directory" ]
+then
+  data_directory="/user/work/lg14410/farm-size-analysis-modelling/data/"
+else
+  data_directory="/user/work/lg14410/farm-size-analysis-modelling/data/${data_directory}"
+fi
+
 
 if [ -z "$out_directory" ]
 then
