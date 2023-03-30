@@ -35,7 +35,7 @@ opt = parse_args(opt_parser);
 # opt <- list(
 #   iter=20,
 #   warmup=10,
-#   output="./outputs/21_03_2023/proj_pred/proj_pred_ref_model.rda",
+#   output="./outputs/21_03_2023/",
 #   ncores=4
 # )
 writeLines("test_file_output",paste0(opt$output,"/test_file.txt"))
@@ -59,9 +59,11 @@ loadRData <- function(fileName){
 ref_model <- loadRData(paste0(opt$output,"/proj_pred/proj_pred_ref_model.rda"))
 ref_model <- get_refmodel(ref_model)
 
+varsel(ref_model)
+
 land_cultivated_varsel <- cv_varsel(ref_model,
-                                    method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 1)
-save(ref_model,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_1.rda"))
+                                    method = 'forward', cv_method = 'kfold', K = 4, verbose = TRUE, seed = 1)
+save(land_cultivated_varsel,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_1.rda"))
 
 # land_cultivated_varsel <- cv_varsel(ref_model,
 #                                     method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 2)

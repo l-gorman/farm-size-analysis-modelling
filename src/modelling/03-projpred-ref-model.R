@@ -9,6 +9,8 @@ library(tidyr)
 library(ggdist)
 library(magrittr)
 library(optparse)
+library(fastDummies)
+
 
 option_list = list(
   make_option(c("-i", "--iter"),  type='integer',
@@ -27,14 +29,14 @@ option_list = list(
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 # 
-# 
-# opt <- list(
-#   iter=20,
-#   warmup=10,
-#   data="./data/",
-#   output="./outputs/projpred_test/",
-#   ncores=4
-# )
+
+opt <- list(
+  iter=20,
+  warmup=10,
+  data="./data/",
+  output="./outputs/projpred_test/",
+  ncores=4
+)
 
 opt$data <- gsub("/$", "", opt$data)
 opt$output <- gsub("/$", "", opt$output)
@@ -68,10 +70,11 @@ indicator_data <- indicator_data[!is.na(indicator_data$village),]
 
 aez_cols <- grep("AEZ", colnames(indicator_data),value=T)
 aez_cols <- aez_cols[aez_cols!="AEZ_Classes_33"]
+colnames(indicator_data)[colnames(indicator_data) %in% aez_cols] <- gsub("AEZ_Classes_33_","aez_",colnames(indicator_data)[colnames(indicator_data) %in% aez_cols])
+aez_cols <- grep("aez_", colnames(indicator_data), value=T)
+# indicator_data$aez_col <- colnames(indicator_data[aez_cols])[max.col(indicator_data[aez_cols])]
+# indicator_data$aez_col <- gsub("AEZ_Classes_33_","AEZ_Class_",indicator_data$aez_col)
 
-indicator_data$aez_col <- colnames(indicator_data[aez_cols])[max.col(indicator_data[aez_cols])]
-indicator_data$aez_col <- gsub("AEZ_Classes_33_","AEZ_Class_",indicator_data$aez_col)
-indicator_data$aez_col <- as.factor(indicator_data$aez_col)
 
 travel_time_cols <- grep("travel_time", colnames(indicator_data), value=T)
 min_travel_time <-  apply( indicator_data[travel_time_cols], 1, min)
@@ -79,6 +82,9 @@ indicator_data$min_travel_time <- min_travel_time
 
 table(indicator_data$head_education_level)
 table(is.na(indicator_data$head_education_level))
+
+
+
 
 education_conversions <- tribble(
   ~survey_value, ~conversion,
@@ -114,6 +120,8 @@ education_conversions <- tribble(
 table(is.na(indicator_data$head_education_level))
 
 
+indicator_data$head_education_level
+
 
 new_education_level <- indicator_data["head_education_level"]
 new_education_level$index <- c(1:nrow(new_education_level))
@@ -123,12 +131,25 @@ new_education_level <- new_education_level[order(new_education_level$index),]
 row.names(new_education_level) <- new_education_level$index
 
 indicator_data$education <- new_education_level$conversion
+
 indicator_data <- indicator_data[!is.na(indicator_data$education),]
 
-normalise <- function(vector){
-  
-}
+indicator_data$education <- factor(indicator_data$education,
+                                      levels=c("no_school",
+                                               "primary",
+                                               "secondary",
+                                               "adult_education",
+                                               "religious_school",
+                                               "postsecondary",
+                                               "vocational",
+                                               "enrolled_not_completed",
+                                               "literate"),
+                                   ordered = F)
 
+dummy_education <- fastDummies::dummy_cols(indicator_data$education)
+dummy_education$.data <- NULL
+colnames(dummy_education) <- gsub(".data","education",colnames(dummy_education))
+indicator_data <- cbind(indicator_data,dummy_education) 
 indicator_data$log_hh_size <- log(indicator_data$hh_size_mae)
 
 indicator_data$log_min_travel_time <- indicator_data$min_travel_time 
@@ -141,14 +162,14 @@ indicator_data <- indicator_data[!is.infinite(indicator_data$log_min_travel_time
 
 x_vars <- c(
   #Household Level,
-  "education",
+  colnames(dummy_education),
   "log_hh_size",
   # "household_type",
  
   
   # Village Level
   "adjusted_length_growing_period",
-  "aez_col",
+  aez_cols,
   "log_min_travel_time",
   
   #Subcounty Level
@@ -187,21 +208,21 @@ ref_model <- brm(
 
 save(ref_model,file=paste0(opt$output,"/proj_pred/proj_pred_ref_model.rda"))
 
-# land_cultivated_varsel <- cv_varsel(get_refmodel(ref_model),
-#                                     method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 1)
-# save(ref_model,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_1.rda"))
-# 
-# land_cultivated_varsel <- cv_varsel(get_refmodel(ref_model),
-#                                     method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 2)
-# save(ref_model,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_2.rda"))
-# 
-# land_cultivated_varsel <- cv_varsel(get_refmodel(ref_model),
-#                                     method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 3)
-# save(ref_model,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_3.rda"))
-# 
-# land_cultivated_varsel <- cv_varsel(get_refmodel(ref_model),
-#                                     method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 4)
-# save(ref_model,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_4.rda"))
+land_cultivated_varsel <- cv_varsel(get_refmodel(ref_model),
+                                    method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 1)
+save(land_cultivated_varsel,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_1.rda"))
+
+land_cultivated_varsel <- cv_varsel(get_refmodel(ref_model),
+                                    method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 2)
+save(land_cultivated_varsel,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_2.rda"))
+
+land_cultivated_varsel <- cv_varsel(get_refmodel(ref_model),
+                                    method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 3)
+save(land_cultivated_varsel,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_3.rda"))
+
+land_cultivated_varsel <- cv_varsel(get_refmodel(ref_model),
+                                    method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 4)
+save(land_cultivated_varsel,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_4.rda"))
 
 
 
