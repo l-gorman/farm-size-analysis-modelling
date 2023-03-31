@@ -4,7 +4,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=28
-#SBATCH --time=0-8:00:00
+#SBATCH --time=0-5:00:00
 #SBATCH --mem=36G
 #SBATCH --account=sscm012844
 
@@ -57,14 +57,14 @@ fi
 
 if [ -z "$iterations" ]
 then
-  iterations=8000
+  iterations=15000
 else
   iterations=$iterations
 fi
 
 if [ -z "$warmup" ]
 then
-  warmup=4000
+  warmup=7500
 else
   warmup=$warmup
 fi
