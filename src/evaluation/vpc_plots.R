@@ -14,6 +14,8 @@ loadRData <- function(fileName){
 }
 
 
+
+
 vpc <- function(model, params){
   
   
@@ -25,6 +27,18 @@ vpc <- function(model, params){
     
     vpcs[[param]] <- draws_df[[param]]^2/rowSums(draws_df[params]^2)
   }
+  vpcs <- vpcs %>% as_tibble()
+  
+  return(vpcs)
+}
+
+
+effect <- function(model, params){
+  
+  
+  draws_df <-  as_draws_df(model)[params]
+  
+  
   vpcs <- vpcs %>% as_tibble()
   
   return(vpcs)
@@ -80,7 +94,8 @@ plot_vpc <- function(model,
                      params,
                      readable_params,
                      title,
-                     subtitle
+                     subtitle,
+                     vpc_or_effect="vpc"
 ){
   
   data <- model$data
@@ -111,6 +126,15 @@ plot_vpc <- function(model,
   brm_anov_vpc <-vpc( 
     model,
     params)
+  xlab <- "VPC"
+  
+  if (vpc_or_effect=="effect"){
+    brm_anov_vpc <-effect( 
+      model,
+      params)
+    xlab <- "Effect"
+    
+  }
   
   # brm_anov_vpc <- brm_anov_vpc %>% 
   #   gather() %>% 
@@ -132,9 +156,9 @@ plot_vpc <- function(model,
     ggplot(aes(y = key, x = value)) +
     stat_halfeye(aes(fill = after_stat(level))) +
     scale_fill_brewer(na.translate = FALSE) +
-    labs(y="", x="VPC",title = title,
+    labs(y="", x=xlab,title = title,
          caption = caption)+
-    scale_y_discrete(name="VPC",
+    scale_y_discrete(name=xlab,
                      breaks=params,
                      labels=readable_params)
   
@@ -150,15 +174,23 @@ plot_multiple_vpcs <- function(country_vec,
                                readable_params,
                                title,
                                subtitle,
-                               facet_wrap=F){
+                               facet_wrap=F,
+                               vpc_or_effect="vpc"){
   
   
   
   all_vpcs <- lapply(1:length(model_paths), function(i){
     model <- loadRData(model_paths[i])
+    if (vpc_or_effect=="vpc"){
     brm_anov_vpc <-vpc( 
       model,
       params)
+    }
+    if (vpc_or_effect=="effect"){
+      brm_anov_vpc <-effect( 
+        model,
+        params)
+    }
     brm_anov_vpc$country <- country_vec[i]
     return(brm_anov_vpc)
   }) %>% bind_rows()
@@ -217,6 +249,8 @@ temp <- plot_vpc(model =model,
                               "sigma"),
                  readable_params = c("Between Country", "Between Subcounty", "Between Village", "Unexplained"),
                  title = "VPCs for Farm Size All Data")
+
+
 
 dir.create("outputs/vpc_plots/gdl/all_data")
 ggsave( "outputs/vpc_plots/gdl/all_data/vpc_plot.png",temp)
@@ -364,9 +398,10 @@ facet_vpcs <- plot_multiple_vpcs(country_vec,
                                  params,
                                  "sigma",
                                  c("Between Subcounty", "Between Village", "Unexplained"),
-                                 "VPCs for Per Country",
+                                 "SD Effects for Per Country",
                                  "",
-                                 facet_wrap=T)
+                                 facet_wrap=T,vpc_or_effect =  "effect"
+                                  )
 ggsave("./outputs/vpc_plots/gdl/summary/vpc_comparisons_facet.png",facet_vpcs,width = 4000,height = 2000,units = "px")
 
 
@@ -479,4 +514,12 @@ final_summary %>% pivot_longer(
   geom_segment(aes(x=.data[["l-95% CI"]],xend=.data[["u-95% CI"]],y=name,yend=name))+
   facet_wrap(~Parameter)
 
+
+# Country wise effects ----------------------------------------------------
+
+model_paths <- 
+
+plot_country_wise_effects <- function(){
+  
+}
 

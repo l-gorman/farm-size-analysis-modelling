@@ -27,7 +27,10 @@ while getopts s:i:w:o:d:c: flag
 do
   case "$flag" in 
     s) script=${OPTARG};;
+    i) iterations=${OPTARG};;
+    w) warmup=${OPTARG};;
     o) out_directory=${OPTARG};;
+    d) data_directory=${OPTARG};;
     c) cores=${OPTARG};;
   esac
 done
@@ -57,14 +60,14 @@ fi
 
 if [ -z "$iterations" ]
 then
-  iterations=15000
+  iterations=4000
 else
   iterations=$iterations
 fi
 
 if [ -z "$warmup" ]
 then
-  warmup=7500
+  warmup=2000
 else
   warmup=$warmup
 fi
