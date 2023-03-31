@@ -209,8 +209,8 @@ ref_model <- brm(
   warmup=opt$warmup,
   # cores=opt$ncores,
   backend = "cmdstanr",
-  cores=2,
-  threads = threading(2)
+  cores=4,
+  threads = threading(7)
   # control=list(adapt_delta=0.9)
 )
 

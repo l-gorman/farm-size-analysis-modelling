@@ -10,6 +10,11 @@ library(ggdist)
 library(magrittr)
 library(optparse)
 library(projpred)
+library(cmdstanr)
+
+options(mc.cores = 28, brms.backend = "cmdstanr") # allows threading
+cmdstanr::set_cmdstan_path("/user/home/lg14410/.cmdstan/cmdstan-2.31.0")
+
 
 # Solution to globals size, found here:
 # https://stackoverflow.com/questions/40536067/how-to-adjust-future-global-maxsize
