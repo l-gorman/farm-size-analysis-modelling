@@ -184,7 +184,6 @@ bf_formula <- bf(paste0(
   " + (1|iso_country_code/gdlcode/village)"
 ))
 
-priors <-c()
 
 
 
