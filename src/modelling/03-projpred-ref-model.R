@@ -184,11 +184,6 @@ bf_formula <- bf(paste0(
   " + (1|iso_country_code/gdlcode/village)"
 ))
 
-
-
-
-
-
 # Setting Priors ----------------------------------------------------------
 
 # Discussion on prior choice
