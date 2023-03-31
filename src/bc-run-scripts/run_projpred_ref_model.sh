@@ -3,8 +3,8 @@
 #SBATCH --job-name=farm-size-modelling
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=28
-#SBATCH --time=0-12:00:00
+#SBATCH --cpus-per-task=4
+#SBATCH --time=0-1:00:00
 #SBATCH --mem=36G
 #SBATCH --account=sscm012844
 
@@ -86,7 +86,7 @@ echo "cores: $cores"
 
 
 
-Rscript $script -o $out_directory -c $cores
+Rscript  $script -i $iterations -w $warmup -d $data_directory -o $out_directory -c $cores
 
 unset iterations
 unset out_directory

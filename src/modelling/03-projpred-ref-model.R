@@ -13,7 +13,7 @@ library(fastDummies)
 library(projpred)
 library(cmdstanr)
 
-options(mc.cores = 28, brms.backend = "cmdstanr") # allows threading
+# options(mc.cores = 28, brms.backend = "cmdstanr") # allows threading
 
 
 option_list = list(
@@ -200,6 +200,7 @@ bf_formula <- bf(paste0(
   " + (1|iso_country_code/gdlcode/village)"
 ))
 
+# stop()
 ref_model <- brm(
   formula = bf_formula,
   data = indicator_data,
