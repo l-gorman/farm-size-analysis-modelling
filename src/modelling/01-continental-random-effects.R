@@ -7,6 +7,9 @@ library(tidyr)
 library(ggdist)
 library(magrittr)
 library(optparse)
+library(fastDummies)
+library(projpred)
+library(cmdstanr)
 
 option_list = list(
   make_option(c("-i", "--iter"),  type='integer',
@@ -40,6 +43,8 @@ opt$data <- gsub("/$", "", opt$data)
 opt$output <- gsub("/$", "", opt$output)
 
 dir.create(opt$output,showWarnings = F)
+
+options(mc.cores = opt$ncores, brms.backend = "cmdstanr") # allows threading
 
 
 writeLines("test_file_output",paste0(opt$output,"/test_file.txt"))

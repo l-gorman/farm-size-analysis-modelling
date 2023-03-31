@@ -13,8 +13,7 @@ library(fastDummies)
 library(projpred)
 library(cmdstanr)
 
-# options(mc.cores = 28, brms.backend = "cmdstanr") # allows threading
-# cmdstanr::set_cmdstan_path("/user/home/lg14410/.cmdstan/cmdstan-2.31.0")
+
 cmdstanr::set_cmdstan_path()
 option_list = list(
   make_option(c("-i", "--iter"),  type='integer',
@@ -34,13 +33,16 @@ opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 # 
 
-opt <- list(
-  iter=4000,
-  warmup=2000,
-  data="./data/",
-  output="./outputs/projpred_test/",
-  ncores=4
-)
+# opt <- list(
+#   iter=4000,
+#   warmup=2000,
+#   data="./data/",
+#   output="./outputs/projpred_test/",
+#   ncores=4
+# )
+
+options(mc.cores = opt$ncores, brms.backend = "cmdstanr") # allows threading
+# cmdstanr::set_cmdstan_path("/user/home/lg14410/.cmdstan/cmdstan-2.31.0")
 
 opt$data <- gsub("/$", "", opt$data)
 opt$output <- gsub("/$", "", opt$output)

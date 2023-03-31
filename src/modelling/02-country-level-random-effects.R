@@ -7,6 +7,10 @@ library(tidyr)
 library(ggdist)
 library(magrittr)
 library(optparse)
+library(fastDummies)
+library(projpred)
+library(cmdstanr)
+
 
 option_list = list(
   make_option(c("-i", "--iter"),  type='integer',
@@ -35,6 +39,7 @@ opt = parse_args(opt_parser);
 # )
 
 
+options(mc.cores = opt$ncores, brms.backend = "cmdstanr") # allows threading
 
 opt$data <- gsub("/$", "", opt$data)
 opt$output <- gsub("/$", "", opt$output)
