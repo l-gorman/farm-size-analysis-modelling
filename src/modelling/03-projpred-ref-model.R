@@ -13,8 +13,8 @@ library(fastDummies)
 library(projpred)
 library(cmdstanr)
 
-# options(mc.cores = 28, brms.backend = "cmdstanr") # allows threading
-
+options(mc.cores = 28, brms.backend = "cmdstanr") # allows threading
+cmdstanr::set_cmdstan_path("/user/home/lg14410/.cmdstan/cmdstan-2.31.0")
 
 option_list = list(
   make_option(c("-i", "--iter"),  type='integer',
