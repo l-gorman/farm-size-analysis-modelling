@@ -25,7 +25,7 @@ option_list = list(
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
-# 
+
 # opt <- list(
 #   iter=2000,
 #   warmup=1000,
@@ -107,16 +107,67 @@ run_model <- function(data,levels, quantile=NULL, sigma, iter, warmup,ncores ){
 
 
 
+# indicator_data <- readr::read_csv(paste0(opt$data,"/prepped-data/rhomis-ee-gaez.csv"))
 indicator_data <- readr::read_csv(paste0(opt$data,"/prepped-data/rhomis-gaez-gdl.csv"))
 
-indicator_data <- indicator_data[!is.na(indicator_data$x_gps_latitude) & !is.na(indicator_data$x_gps_longitude),]
+# Removing null Land cultivated values
 indicator_data <- indicator_data[!is.na(indicator_data$land_cultivated_ha),]
-# indicator_data <- indicator_data[!is.na(indicator_data$hfias_status),]
-
-indicator_data <- indicator_data[!is.na(indicator_data$village),]
-
 indicator_data <- indicator_data[indicator_data$land_cultivated_ha>0,]
 indicator_data <- indicator_data[indicator_data$land_cultivated_ha<100,]
+indicator_data$log_land_cultivated <-  log(indicator_data$land_cultivated_ha)
+
+# Cleaning Travel time columns
+travel_time_cols <- grep("travel_time", colnames(indicator_data), value=T)
+min_travel_time <-  apply( indicator_data[travel_time_cols], 1, min)
+indicator_data$min_travel_time <- min_travel_time
+indicator_data <- indicator_data[indicator_data$min_travel_time!=0,]
+indicator_data$log_min_travel_time <- log(indicator_data$min_travel_time)
+
+#Cleaning HH_Size
+indicator_data <- indicator_data[indicator_data$hh_size_mae!=0,]
+indicator_data$log_hh_size <- log(indicator_data$hh_size_mae)
+
+# Clean AEZ cols
+aez_cols <- grep("AEZ", colnames(indicator_data),value=T)
+aez_cols <- aez_cols[aez_cols!="AEZ_Classes_33"]
+colnames(indicator_data)[colnames(indicator_data) %in% aez_cols] <- gsub("AEZ_Classes_33_","aez_",colnames(indicator_data)[colnames(indicator_data) %in% aez_cols])
+aez_cols <- grep("aez_", colnames(indicator_data), value=T)
+
+
+# Clean Education Columns -------------------------------------------------
+
+education_conversions <- tribble(
+  ~survey_value, ~conversion,
+  "postsecondary","postsecondary",
+  "college",   "postsecondary",
+  "illiterate",   "no_school",
+  "no_school",   "no_school",
+  "none", "no_school",
+  "enrolled_not_completed",   "enrolled_not_completed",
+  "no_answer", NA,
+  "primary","primary",
+  "primary_1","primary",
+  "primary_2","primary",
+  "religious_school","religious_school",
+  "islamic_school","religious_school",
+  "koranic_school", "religious_school",
+  "secondary","secondary",
+  "secondary_1","secondary",
+  "secondary_2","secondary",
+  "literate","literate",
+  "technical", "vocational",
+  "vocational", "vocational",
+  "adult_education",   "adult_education",
+)
+
+new_education_level <- indicator_data["head_education_level"]
+new_education_level$index <- c(1:nrow(new_education_level))
+new_education_level <- new_education_level %>% merge(education_conversions, by.x="head_education_level", by.y = "survey_value", all.x = T, all.y=F)
+new_education_level <- new_education_level[order(new_education_level$index),]
+row.names(new_education_level) <- new_education_level$index
+indicator_data$education <- new_education_level$conversion
+indicator_data <- indicator_data[!is.na(indicator_data$education),]
+
 
 
 

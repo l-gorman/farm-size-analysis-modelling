@@ -102,7 +102,9 @@ plot_variables <- function(model,
                            grep_pattern=NULL,
                            readable_params=NULL,
                            title,
-                           replaceable_string=NULL){
+                           all=F,
+                           replaceable_string=NULL,
+                           xlim){
   
   model_variables <- get_variables(model)
   
@@ -110,7 +112,7 @@ plot_variables <- function(model,
     stop("Choose grep or vars, not both")
   }
   
-  if(is.null(grep_pattern)&is.null(vars)){
+  if(is.null(grep_pattern)&is.null(vars) & is.null(all)){
     stop("Choose variables or variable pattern")
   }
   
@@ -119,6 +121,16 @@ plot_variables <- function(model,
     if (is.null(readable_params)){
       stop("Provide readable version of params")
     }
+    
+  }
+  
+  if (all==T){
+    params <- c(
+      grep("^sd_",model_variables,value=T),
+      grep("^sigma",model_variables,value=T),
+      grep("^b_",model_variables,value=T)
+    )
+    readable_params <- params
     
   }
   
@@ -143,20 +155,25 @@ plot_variables <- function(model,
     # labs(y="", x="Estimates",title = title)+
     scale_y_discrete(name="",
                      breaks=params,
-                     labels=readable_params)
-  # 
+                     labels=readable_params)+
+    xlim(xlim)
+  #
   return(plot)
 }
 
+ref_model <- loadRData("outputs/projpred_test/proj_pred/horseshoe_ref_model.rda")
 
-ref_model <- loadRData("outputs/21_03_2023/proj_pred/proj_pred_ref_model.rda")
+# ref_model <- loadRData("outputs/21_03_2023/proj_pred/proj_pred_ref_model.rda")
 
 
-vpcs <- vpc(ref_model,c( "sd_iso_country_code__Intercept",
-                         "sd_iso_country_code:gdlcode__Intercept",
-                         "sd_iso_country_code:gdlcode:village__Intercept",
-                         "sigma"))
-
+# vpcs <- vpc(ref_model,c( "sd_iso_country_code__Intercept",
+#                          "sd_iso_country_code:gdlcode__Intercept",
+#                          "sd_iso_country_code:gdlcode:village__Intercept",
+#                          "sigma"))
+plot_variables(ref_model,
+               all = T,
+               title="...",
+               xlim=c(-1,1.1))
 
 plot_variables(ref_model, 
                vars=c( "sd_iso_country_code__Intercept",
@@ -177,15 +194,15 @@ plot_variables(ref_model,
                grep_pattern="education",
                readable_params=NULL,
                title="Estimates for ...",
-               replaceable_string="b_education")
+               replaceable_string="b_education_")
 
 
 plot_variables(ref_model, 
                vars=NULL,
-               grep_pattern="aez_col",
+               grep_pattern="aez_",
                readable_params=NULL,
                title="Estimates for ...",
-               replaceable_string="b_aez_colAEZ_Class_")
+               replaceable_string="b_aez_")
 
 # plot_variables(ref_model, 
 #                vars=NULL,
@@ -196,21 +213,21 @@ plot_variables(ref_model,
 
 plot_variables(ref_model, 
                vars=NULL,
-               grep_pattern="b_gdl",
+               grep_pattern="gdl_",
                readable_params=NULL,
                title="Estimates for ...",
-               replaceable_string="b_gdl_")
+               replaceable_string="")
 
 
 plot_variables(ref_model, 
-               vars="b_log_hh_size",
+               vars="log_hh_size",
                # grep_pattern="b_gdl",
                readable_params="Household Size",
                title="Estimates for ...",
                replaceable_string=NULL)
 
 plot_variables(ref_model, 
-               vars="b_adjusted_length_growing_period",
+               vars="adjusted_length_growing_period",
                # grep_pattern="b_gdl",
                readable_params="Length Growing Period",
                title="Estimates for ...",
@@ -222,6 +239,9 @@ plot_variables(ref_model,
                readable_params="Minimum Travel Time",
                title="Estimates for ...",
                replaceable_string=NULL)
+
+plot_variables(ref_model,
+               all=T)
 
 
 get_variables(ref_model)
