@@ -227,7 +227,7 @@ horseshoe_model <- brm(
   warmup=opt$warmup,
   cores=opt$ncores,
   backend = "cmdstanr",
-  prior=priors,
+  prior=horseshoe_priors,
   # cores=1,
   # threads = threading(7)
   # control=list(adapt_delta=0.9)
