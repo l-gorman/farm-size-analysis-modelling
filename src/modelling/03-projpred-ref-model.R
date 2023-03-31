@@ -227,7 +227,7 @@ horseshoe_model <- brm(
   warmup=opt$warmup,
   cores=opt$ncores,
   backend = "cmdstanr",
-  prior=horseshoe_priors,
+  prior=horseshoe_priors
   # cores=1,
   # threads = threading(7)
   # control=list(adapt_delta=0.9)
@@ -244,7 +244,7 @@ weak_prior_model <- brm(
   warmup=opt$warmup,
   cores=opt$ncores,
   backend = "cmdstanr",
-  prior=weak_priors,
+  prior=weak_priors
 )
 
 save(weak_prior_model,file=paste0(opt$output,"/proj_pred/weak_prior_ref_model.rda"))
