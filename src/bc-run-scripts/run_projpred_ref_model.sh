@@ -57,14 +57,14 @@ fi
 
 if [ -z "$iterations" ]
 then
-  iterations=2000
+  iterations=8000
 else
   iterations=$iterations
 fi
 
 if [ -z "$warmup" ]
 then
-  warmup=1000
+  warmup=4000
 else
   warmup=$warmup
 fi
