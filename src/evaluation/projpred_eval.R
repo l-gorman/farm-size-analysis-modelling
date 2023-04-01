@@ -161,9 +161,10 @@ plot_variables <- function(model,
   return(plot)
 }
 
-ref_model <- loadRData("outputs/projpred_test/proj_pred/horseshoe_ref_model.rda")
+# ref_model <- loadRData("outputs/projpred_test/proj_pred/horseshoe_ref_model.rda")
 
-# ref_model <- loadRData("outputs/21_03_2023/proj_pred/proj_pred_ref_model.rda")
+# ref_model <- loadRData("outputs/21_03_2023/proj_pred/horseshoe_ref_model.rda")
+ref_model <- loadRData("outputs/21_03_2023/proj_pred/weak_prior_ref_model.rda")
 
 
 # vpcs <- vpc(ref_model,c( "sd_iso_country_code__Intercept",
@@ -186,7 +187,8 @@ plot_variables(ref_model,
                                   "Between Village",
                                   "Unexplained"),
                title="Estimates for ...",
-               replaceable_string=NULL)
+               replaceable_string=NULL,
+               xlim=c(0,1.1))
 
 
 plot_variables(ref_model, 
@@ -194,7 +196,8 @@ plot_variables(ref_model,
                grep_pattern="education",
                readable_params=NULL,
                title="Estimates for ...",
-               replaceable_string="b_education_")
+               replaceable_string="b_education_",
+               xlim=c(-1,1.1))
 
 
 plot_variables(ref_model, 
@@ -202,7 +205,8 @@ plot_variables(ref_model,
                grep_pattern="aez_",
                readable_params=NULL,
                title="Estimates for ...",
-               replaceable_string="b_aez_")
+               replaceable_string="b_aez_",
+               xlim=c(-1,1.1))
 
 # plot_variables(ref_model, 
 #                vars=NULL,
@@ -216,18 +220,20 @@ plot_variables(ref_model,
                grep_pattern="gdl_",
                readable_params=NULL,
                title="Estimates for ...",
-               replaceable_string="")
+               replaceable_string="",
+               xlim=c(-1,1.1))
 
 
 plot_variables(ref_model, 
-               vars="log_hh_size",
+               vars="rescaled_log_hh_size",
                # grep_pattern="b_gdl",
                readable_params="Household Size",
                title="Estimates for ...",
-               replaceable_string=NULL)
+               replaceable_string=NULL,
+               xlim=c(-1,1.1))
 
 plot_variables(ref_model, 
-               vars="adjusted_length_growing_period",
+               vars="rescaled_adjusted_length_growing_period",
                # grep_pattern="b_gdl",
                readable_params="Length Growing Period",
                title="Estimates for ...",

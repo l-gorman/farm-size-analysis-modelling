@@ -89,7 +89,7 @@ echo "cores: $cores"
 
 
 
-Rscript  $script -i $iterations -w $warmup -d $data_directory -o $out_directory -c $cores
+Rscript  $script -o $out_directory -c $cores
 
 unset iterations
 unset out_directory
