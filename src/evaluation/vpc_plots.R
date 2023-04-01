@@ -18,7 +18,6 @@ loadRData <- function(fileName){
 
 vpc <- function(model, params){
   
-  
   draws_df <-  as_draws_df(model)[params]
   
   vpcs <- list()
@@ -38,10 +37,7 @@ effect <- function(model, params){
   
   draws_df <-  as_draws_df(model)[params]
   
-  
-  vpcs <- vpcs %>% as_tibble()
-  
-  return(vpcs)
+  return(draws_df)
 }
 
 
@@ -90,7 +86,7 @@ summary_table <- function(model){
   
 }
 
-plot_vpc <- function(model,
+plot_effects <- function(model,
                      params,
                      readable_params,
                      title,
@@ -100,16 +96,10 @@ plot_vpc <- function(model,
   
   data <- model$data
   number_of_points <- nrow(data)
-  
-  
+
   mean_land_cultivated_ha <- round(mean(data$land_cultivated_ha),2)
   sd_land_cultivated_ha <- round(sd(data$land_cultivated_ha))
-  
-  
-  
-  
-  
-  
+
   number_of_villages <- length(unique(data$village))
   people_per_village <- data %>% 
     group_by(village) %>% summarise(number_of_people=n())
@@ -122,11 +112,13 @@ plot_vpc <- function(model,
   mean_villages_per_county <- round(mean(villages_per_subnational_region$number_of_villages),2)
   
   
-  
+  if (vpc_or_effect=="vpc"){
+    
   brm_anov_vpc <-vpc( 
     model,
     params)
   xlab <- "VPC"
+  }
   
   if (vpc_or_effect=="effect"){
     brm_anov_vpc <-effect( 
@@ -167,16 +159,16 @@ plot_vpc <- function(model,
   
 }
 
-plot_multiple_vpcs <- function(country_vec,
+plot_multiple_effects <- function(country_vec,
                                model_paths,
                                params,
                                param_of_interest,
                                readable_params,
                                title,
                                subtitle,
-                               facet_wrap=F,
+                               wrap=F,
                                vpc_or_effect="vpc"){
-  
+
   
   
   all_vpcs <- lapply(1:length(model_paths), function(i){
@@ -195,13 +187,22 @@ plot_multiple_vpcs <- function(country_vec,
     return(brm_anov_vpc)
   }) %>% bind_rows()
   
-  if (facet_wrap==T){
+  if (vpc_or_effect=="vpc"){
+    x<- "VPC"
+  }
+  if (vpc_or_effect=="effect"){
+    x<- "Effect"
+  }
+  
+  
+  
+  if (wrap==T){
     result <- all_vpcs %>%
       pivot_longer(!country) %>%
       ggplot(aes(y = name, x = value)) +
       stat_pointinterval() +
       scale_fill_brewer(na.translate = FALSE) +
-      labs(y="", x="VPC",title = "Variance Partition Coefficients for Individual Country Models")+
+      labs(y="", x=x,title = "Variance Partition Coefficients for Individual Country Models")+
       scale_y_discrete(
         breaks=params,
         labels=readable_params)+
@@ -214,7 +215,7 @@ plot_multiple_vpcs <- function(country_vec,
       ggplot(all_vpcs,aes(y = country, x = .data[[param_of_interest]])) +
       stat_pointinterval() +
       scale_fill_brewer(na.translate = FALSE) +
-      labs(y="County", x="VPC",title = title)
+      labs(y="County", x=x,title = title)
     # scale_y_discrete(
     #   breaks=params,
     #   labels=readable_params)
@@ -239,10 +240,14 @@ dir.create("outputs/vpc_plots/")
 
 dir.create("outputs/vpc_plots/gdl")
 
+# -------------------------------------------------------------------------
+# -------------------------------------------------------------------------
+# Regional Model ----------------------------------------------------------
+# -------------------------------------------------------------------------
+# -------------------------------------------------------------------------
 
 model <- loadRData( "./outputs/21_03_2023/iso_country_code_gdlcode_village.rda")
-get_variables(model)[1:10]
-temp <- plot_vpc(model =model,
+temp <- plot_effects(model =model,
                  params =  c( "sd_iso_country_code__Intercept",
                               "sd_iso_country_code:gdlcode__Intercept",
                               "sd_iso_country_code:gdlcode:village__Intercept",
@@ -254,6 +259,19 @@ temp <- plot_vpc(model =model,
 
 dir.create("outputs/vpc_plots/gdl/all_data")
 ggsave( "outputs/vpc_plots/gdl/all_data/vpc_plot.png",temp)
+
+temp <- plot_effects(model=model,
+                 params =  c( "sd_iso_country_code__Intercept",
+                              "sd_iso_country_code:gdlcode__Intercept",
+                              "sd_iso_country_code:gdlcode:village__Intercept",
+                              "sigma"),
+                 readable_params = c("Between Country", "Between Subcounty", "Between Village", "Unexplained"),
+                 title = "VPCs for Farm Size All Data",vpc_or_effect = "effect")
+
+
+
+dir.create("outputs/vpc_plots/gdl/all_data")
+ggsave( "outputs/vpc_plots/gdl/all_data/effect_plot.png",temp)
 
 overall_summary <- summary_table(model)
 overall_summary <- overall_summary %>% 
@@ -305,13 +323,22 @@ for (country_dir in all_countries){
   
   dir.create(paste0("outputs/vpc_plots/gdl/",country))
   # Plot VPCs
-  temp <- plot_vpc(model = model,
+  temp <- plot_effects(model = model,
                    params =  c(
                      "sd_gdlcode__Intercept",
                      "sd_gdlcode:village__Intercept",
                      "sigma"),
                    readable_params = c("Between Subcounty", "Between Village", "Unexplained"),
                    title = paste0("VPCs for Land Cultivated Model ",country))
+  ggsave(paste0("outputs/vpc_plots/gdl/",country,"/vpc_plot.png"),temp)
+  
+  temp <- plot_effects(model = model,
+                       params =  c(
+                         "sd_gdlcode__Intercept",
+                         "sd_gdlcode:village__Intercept",
+                         "sigma"),
+                       readable_params = c("Between Subcounty", "Between Village", "Unexplained"),
+                       title = paste0("VPCs for Land Cultivated Model ",country),vpc_or_effect = "effect")
   ggsave(paste0("outputs/vpc_plots/gdl/",country,"/vpc_plot.png"),temp)
   
   
@@ -333,9 +360,6 @@ for (country_dir in all_countries){
   ft <- autofit(ft)
   
   save_as_image(ft, path = paste0("outputs/vpc_plots/gdl/",country,"/table_fit_summary.png"))
-  
-  
-  
   
   # Trace Plots
   png(filename = paste0("./outputs/vpc_plots/gdl/",country,"/trace_plots.png"))
@@ -362,45 +386,78 @@ params =  c(
   "sd_gdlcode:village__Intercept",
   "sigma")
 
-county_vpcs <- plot_multiple_vpcs(country_vec,
+county_vpcs <- plot_multiple_effects(country_vec,
                                   model_paths,
                                   params,
                                   "sd_gdlcode__Intercept",
                                   c("Between Subcounty", "Between Village", "Unexplained"),
                                   "VPCs for Between County Variance",
                                   "",
-                                  facet_wrap=F)
+                                  wrap=F)
 ggsave("./outputs/vpc_plots/gdl/summary/county_vpc_comparisons.png",county_vpcs)
 
-village <- plot_multiple_vpcs(country_vec,
+county_effects <- plot_multiple_effects(country_vec,
+                                     model_paths,
+                                     params,
+                                     "sd_gdlcode__Intercept",
+                                     c("Between Subcounty", "Between Village", "Unexplained"),
+                                     "VPCs for Between County Variance",
+                                     "",
+                                     wrap=F,vpc_or_effect = "effect"
+                                      )
+ggsave("./outputs/vpc_plots/gdl/summary/county_effect_comparisons.png",county_effects)
+
+village <- plot_multiple_effects(country_vec,
                               model_paths,
                               params,
                               "sd_gdlcode:village__Intercept",
                               c("Between Subcounty", "Between Village", "Unexplained"),
                               "VPCs for Between Village Variance",
                               "",
-                              facet_wrap=F)
+                              wrap=F)
 ggsave("./outputs/vpc_plots/gdl/summary/village_vpc_comparisons.png",village)
 
+village <- plot_multiple_effects(country_vec,
+                              model_paths,
+                              params,
+                              "sd_gdlcode:village__Intercept",
+                              c("Between Subcounty", "Between Village", "Unexplained"),
+                              "VPCs for Between Village Variance",
+                              "",
+                              wrap=F,vpc_or_effect = "effect")
+ggsave("./outputs/vpc_plots/gdl/summary/village_effect_comparisons.png",village)
 
-unexplained <- plot_multiple_vpcs(country_vec,
+
+
+unexplained <- plot_multiple_effects(country_vec,
                                   model_paths,
                                   params,
                                   "sigma",
                                   c("Between Subcounty", "Between Village", "Unexplained"),
                                   "VPCs for Unexplained Variance",
                                   "",
-                                  facet_wrap=F)
+                                  wrap=F)
 ggsave("./outputs/vpc_plots/gdl/summary/unexplained_vpc_comparisons.png",unexplained)
 
-facet_vpcs <- plot_multiple_vpcs(country_vec,
+unexplained <- plot_multiple_effects(country_vec,
+                                  model_paths,
+                                  params,
+                                  "sigma",
+                                  c("Between Subcounty", "Between Village", "Unexplained"),
+                                  "VPCs for Unexplained Variance",
+                                  "",
+                                  wrap=F,vpc_or_effect = "effect")
+ggsave("./outputs/vpc_plots/gdl/summary/unexplained_effect_comparisons.png",unexplained)
+
+
+facet_vpcs <- plot_multiple_effects(country_vec,
                                  model_paths,
                                  params,
                                  "sigma",
                                  c("Between Subcounty", "Between Village", "Unexplained"),
                                  "SD Effects for Per Country",
                                  "",
-                                 facet_wrap=T,vpc_or_effect =  "effect"
+                                 wrap=T,vpc_or_effect =  "effect"
                                   )
 ggsave("./outputs/vpc_plots/gdl/summary/vpc_comparisons_facet.png",facet_vpcs,width = 4000,height = 2000,units = "px")
 
