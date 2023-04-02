@@ -64,10 +64,9 @@ loadRData <- function(fileName){
 ref_model <- loadRData(paste0(opt$output,"/proj_pred/weak_prior_ref_model.rda"))
 ref_model <- get_refmodel(ref_model)
 
-varsel(ref_model)
 
 land_cultivated_varsel <- cv_varsel(ref_model,
-                                    method = 'forward', cv_method = 'kfold', K = 4, verbose = TRUE, seed = 1)
+                                    method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 1)
 save(land_cultivated_varsel,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_1.rda"))
 
 land_cultivated_varsel <- cv_varsel(ref_model,
