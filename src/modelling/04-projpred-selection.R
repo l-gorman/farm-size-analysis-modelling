@@ -71,15 +71,15 @@ save(land_cultivated_varsel,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_
 
 land_cultivated_varsel <- cv_varsel(ref_model,
                                     method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 2)
-save(ref_model,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_2.rda"))
+save(land_cultivated_varsel,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_2.rda"))
 
 land_cultivated_varsel <- cv_varsel(ref_model,
                                     method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 3)
-save(ref_model,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_3.rda"))
+save(land_cultivated_varsel,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_3.rda"))
 
 land_cultivated_varsel <- cv_varsel(ref_model,
                                     method = 'forward', cv_method = 'kfold', K = 5, verbose = TRUE, seed = 4)
-save(ref_model,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_4.rda"))
+save(land_cultivated_varsel,file=paste0(opt$output,"/proj_pred/proj_pred_varsel_model_4.rda"))
 
 
 
